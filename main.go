@@ -28,7 +28,7 @@ func main() {
 	appState := state.NewAppState()
 
 	a := app.New()
-	a.Settings().SetTheme(theme.DarkTheme())
+	a.Settings().SetTheme(theme.LightTheme())
 	window := a.NewWindow("Система межбанковских сообщений")
 	window.Resize(fyne.NewSize(1024, 800))
 

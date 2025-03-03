@@ -43,7 +43,7 @@ func NewNavigationManager(
 }
 
 func (n *NavigationManager) Start() {
-	n.navigateTo(ScreenLogin)
+	n.navigateTo(ScreenBankSelector)
 }
 
 func (n *NavigationManager) navigateTo(screenID ScreenID) {

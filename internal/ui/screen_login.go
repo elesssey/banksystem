@@ -12,7 +12,7 @@ import (
 	"banksystem/internal/model"
 )
 
-func MakeLoginScreen(onLoginTry func(string), onLoginOk func(user *model.User)) fyne.CanvasObject {
+func MakeLoginScreen(onLoginTry func(string, string), onLoginOk func(user *model.User)) fyne.CanvasObject {
 	heading := canvas.NewText("BANK-SYSTEM", color.Black)
 	heading.TextSize = 30
 	heading.Alignment = fyne.TextAlignCenter
@@ -22,9 +22,9 @@ func MakeLoginScreen(onLoginTry func(string), onLoginOk func(user *model.User)) 
 	emailEntry := widget.NewEntry()
 
 	passwordLabel := widget.NewLabelWithStyle("PASSWORD:", fyne.TextAlignTrailing, fyne.TextStyle{})
-	password := widget.NewPasswordEntry()
+	passwordEntry := widget.NewPasswordEntry()
 
-	signInButton := widget.NewButton("SIGN IN", func() { onLoginTry(emailEntry.Text) })
+	signInButton := widget.NewButton("SIGN IN", func() { onLoginTry(emailEntry.Text, passwordEntry.Text) })
 	signInButton.Importance = widget.HighImportance
 
 	orLabel := canvas.NewText("OR", color.Black)
@@ -50,7 +50,7 @@ func MakeLoginScreen(onLoginTry func(string), onLoginOk func(user *model.User)) 
 
 	form := container.NewVBox(
 		container.New(layout.NewFormLayout(), emailLabel, emailEntry),
-		container.New(layout.NewFormLayout(), passwordLabel, password),
+		container.New(layout.NewFormLayout(), passwordLabel, passwordEntry),
 	)
 
 	content := container.New(layout.NewCustomPaddedLayout(100, 100, 300, 300), container.NewVBox(

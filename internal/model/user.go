@@ -3,17 +3,17 @@ package model
 type Role string
 
 const (
-	RoleClient     Role = "client"
-	RoleOperator   Role = "operator"
-	RoleManager    Role = "manager"
-	RoleSpecialist Role = "specialist"
-	RoleAdmin      Role = "admin"
+	RoleClient   Role = "client"
+	RoleOperator Role = "operator"
+	RoleManager  Role = "manager"
+	RoleAdmin    Role = "admin"
 )
 
 type User struct {
 	ID             int
-	Username       string
+	Password       string
 	Name           string
+	MiddleName     string
 	Surname        string
 	PassportSeries string
 	PassportNumber string

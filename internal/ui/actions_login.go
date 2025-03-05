@@ -6,13 +6,13 @@ import (
 	"fyne.io/fyne/v2/dialog"
 )
 
-func (n *NavigationManager) onLoginClick(email string) {
+func (n *NavigationManager) onLoginClick(email string, password string) {
 	if email == "" {
 		n.showError("Введите Email", func() { n.navigateTo(ScreenLogin) })
 		return
 	}
 
-	user, err := n.authService.Login(email)
+	user, err := n.authService.Login(email, password)
 	if err != nil {
 		n.showError("Ошибка: "+err.Error(), func() { n.navigateTo(ScreenLogin) })
 		return
@@ -23,6 +23,6 @@ func (n *NavigationManager) onLoginClick(email string) {
 
 func (n *NavigationManager) handleSuccessfulLogin(user *model.User) {
 	n.state.User.SetCurrentUser(user)
-
+	n.navigateTo(ScreenBankSelector)
 	dialog.ShowInformation("Info", "You are logged in!", n.window)
 }

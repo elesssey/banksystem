@@ -9,9 +9,9 @@ import (
 	"fyne.io/fyne/v2/theme"
 
 	"banksystem/internal/service"
-	"banksystem/internal/state"
 	"banksystem/internal/storage"
 	"banksystem/internal/ui"
+	"banksystem/internal/ui/state"
 )
 
 func main() {
@@ -21,9 +21,11 @@ func main() {
 	}
 	defer db.Close()
 
-	userStorage := storage.NewSQLiteUserStorage(db)
+	userStorage := storage.NewSQLUserStorage(db)
+	bankStorage := storage.NewSQLBankStorage(db)
 
 	authService := service.NewAuthService(userStorage)
+	bankingService := service.NewBankingService(bankStorage)
 
 	appState := state.NewAppState()
 
@@ -37,6 +39,7 @@ func main() {
 		window,
 		appState,
 		authService,
+		bankingService,
 	)
 	navigationManager.Start()
 

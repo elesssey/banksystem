@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"banksystem/internal/service"
-	"banksystem/internal/state"
+	"banksystem/internal/ui/state"
 )
 
 type ScreenID int
@@ -19,10 +19,11 @@ const (
 )
 
 type NavigationManager struct {
-	app         fyne.App
-	window      fyne.Window
-	state       *state.AppState
-	authService service.AuthService
+	app            fyne.App
+	window         fyne.Window
+	state          *state.AppState
+	authService    service.AuthService
+	bankingService service.BankingService
 
 	currentScreen ScreenID
 }
@@ -32,18 +33,20 @@ func NewNavigationManager(
 	window fyne.Window,
 	state *state.AppState,
 	authService service.AuthService,
+	bankingServicce service.BankingService,
 ) *NavigationManager {
 	return &NavigationManager{
-		app:           app,
-		window:        window,
-		state:         state,
-		authService:   authService,
-		currentScreen: ScreenNone,
+		app:            app,
+		window:         window,
+		state:          state,
+		authService:    authService,
+		bankingService: bankingServicce,
+		currentScreen:  ScreenNone,
 	}
 }
 
 func (n *NavigationManager) Start() {
-	n.navigateTo(ScreenBankSelector)
+	n.navigateTo(ScreenLogin)
 }
 
 func (n *NavigationManager) navigateTo(screenID ScreenID) {
@@ -57,7 +60,11 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 	case ScreenLogin:
 		n.window.SetContent(MakeLoginScreen(n.onLoginClick, n.handleSuccessfulLogin))
 	case ScreenBankSelector:
-		n.window.SetContent(MakeBankSelectorScreen())
+		if err := n.initializeBankPageData(); err != nil {
+			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
+			return
+		}
+		n.window.SetContent(MakeBankSelectorScreen(n.state.Banks.Banks[0], n.state.Banks.Banks[1], n.state.Banks.Banks[2]))
 	}
 }
 

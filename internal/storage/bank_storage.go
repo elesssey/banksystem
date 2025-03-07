@@ -3,11 +3,13 @@ package storage
 import (
 	"banksystem/internal/model"
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
 type BankStorage interface {
 	Fetch(limit int) ([]*model.Bank, error)
+	FindUserAccount(user_id int) (*model.User_Account, error)
 }
 
 type sqlBankStorage struct {
@@ -54,7 +56,7 @@ func (s *sqlBankStorage) Fetch(limit int) ([]*model.Bank, error) {
 		if err := eRows.Scan(&enterprise.ID, &enterprise.Name, &enterprise.UNP, &enterprise.Address, &enterprise.BankID); err != nil {
 			return nil, err
 		}
-		fmt.Println("SDOFJSOIDJFS", enterprise)
+
 		for bi := range banks {
 			if banks[bi].ID == enterprise.BankID {
 				banks[bi].Enterprises = append(banks[bi].Enterprises, enterprise)
@@ -66,4 +68,28 @@ func (s *sqlBankStorage) Fetch(limit int) ([]*model.Bank, error) {
 	}
 
 	return banks, nil
+}
+
+func (s *sqlBankStorage) FindUserAccount(user_id int) (*model.User_Account, error) {
+	query := `SELECT id, number, balance, currency, user_id, bank_id FROM user_account WHERE user_id = ?`
+	row := s.db.QueryRow(query, user_id)
+	user_account := &model.User_Account{}
+	err := row.Scan(
+		&user_account.ID,
+		&user_account.Number,
+		&user_account.Balance,
+		&user_account.Currency,
+		&user_account.User_id,
+		&user_account.Bank_id,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, errors.New("user account not found")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user_account, nil
 }

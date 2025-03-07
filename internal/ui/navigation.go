@@ -16,6 +16,7 @@ const (
 	ScreenError
 	ScreenLogin
 	ScreenBankSelector
+	ScreenBank
 )
 
 type NavigationManager struct {
@@ -64,7 +65,15 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
 			return
 		}
-		n.window.SetContent(MakeBankSelectorScreen(n.state.Banks.Banks[0], n.state.Banks.Banks[1], n.state.Banks.Banks[2]))
+		n.window.SetContent(MakeBankSelectorScreen(n.openBankPage, n.state.Banks.Banks[0], n.state.Banks.Banks[1], n.state.Banks.Banks[2]))
+	case ScreenBank:
+		user := n.state.User.GetCurrentUser()
+		user_account, err := n.bankingService.GetUserAccount(user.ID)
+		if err != nil {
+			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
+			return
+		}
+		n.window.SetContent(MakeBankPage(n.state.Banks.Banks[n.state.Banks.SelectedBankIndex], user, user_account))
 	}
 }
 

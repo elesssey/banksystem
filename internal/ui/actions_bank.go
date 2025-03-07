@@ -21,3 +21,8 @@ func (n *NavigationManager) initializeBankPageData() error {
 	n.state.Banks.SetBanks(banks[0], banks[1], banks[2])
 	return nil
 }
+
+func (n *NavigationManager) openBankPage(index int) {
+	n.state.Banks.SelectedBankIndex = index
+	n.navigateTo(ScreenBank)
+}

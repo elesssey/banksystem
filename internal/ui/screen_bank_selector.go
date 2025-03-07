@@ -11,7 +11,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeBankSelectorScreen(bank1, bank2, bank3 *model.Bank) fyne.CanvasObject {
+func MakeBankSelectorScreen(onBankClick func(int), bank1, bank2, bank3 *model.Bank) fyne.CanvasObject {
 	heading := canvas.NewText("Добро пожаловать", color.Black)
 	heading.TextSize = 30
 	heading.Alignment = fyne.TextAlignCenter
@@ -26,11 +26,15 @@ func MakeBankSelectorScreen(bank1, bank2, bank3 *model.Bank) fyne.CanvasObject {
 		Label3,
 	)
 
-	bankCards := container.NewGridWithColumns(3, MakeBankCard(bank1), MakeBankCard(bank2), MakeBankCard(bank3))
+	bankCards := container.NewGridWithColumns(3,
+		MakeBankCard(onBankClick, bank1, 0),
+		MakeBankCard(onBankClick, bank2, 1),
+		MakeBankCard(onBankClick, bank3, 2),
+	)
 	return container.NewVBox(heading, Label1, bankCards, form)
 }
 
-func MakeBankCard(bank *model.Bank) fyne.CanvasObject {
+func MakeBankCard(onBankClick func(int), bank *model.Bank, index int) fyne.CanvasObject {
 	borderHeading := canvas.NewRectangle(color.Black)
 	borderHeading.StrokeWidth = 2
 	borderHeading.StrokeColor = color.Black
@@ -54,7 +58,7 @@ func MakeBankCard(bank *model.Bank) fyne.CanvasObject {
 	enterpriceList1 := createEnterpricesConvasList(bank.Enterprises)
 	enterprises := container.NewGridWithColumns(1, enterpriceList1...)
 
-	button := widget.NewButton("Select", func() {})
+	button := widget.NewButton("Select", func() { onBankClick(index) })
 	button.Importance = widget.HighImportance
 	buttonContainer := container.New(layout.NewCustomPaddedLayout(0, 5, 5, 5), button)
 

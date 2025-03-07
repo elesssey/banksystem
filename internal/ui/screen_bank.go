@@ -12,11 +12,11 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeBankPage(bank *model.Bank, user *model.User, account *model.User_Account) fyne.CanvasObject {
+func MakeBankPage(bank *model.Bank, user *model.User, account *model.UserAccount) fyne.CanvasObject {
 	heading := widget.NewLabelWithStyle(bank.Name, fyne.TextAlignLeading, fyne.TextStyle{})
 
-	Label1 := canvas.NewText("Существующие счета:", color.Black)
-	Label2 := canvas.NewText("Вы можете перести деньги другому пользователю используя дебетовый счет", color.RGBA{255, 0, 0, 1})
+	label1 := canvas.NewText("Существующие счета:", color.Black)
+	label2 := canvas.NewText("Вы можете перести деньги другому пользователю используя дебетовый счет", color.RGBA{255, 0, 0, 255})
 	debitLabel1 := widget.NewLabelWithStyle("Дебетовый счет", fyne.TextAlignCenter, fyne.TextStyle{})
 	debitLabel2 := canvas.NewText("Номер счета:", color.Black)
 	debitLabel3 := canvas.NewText("Баланс:", color.Black)
@@ -29,27 +29,22 @@ func MakeBankPage(bank *model.Bank, user *model.User, account *model.User_Accoun
 	infButton.Resize(fyne.NewSize(200, 50))
 	transferButton := widget.NewButton("СДЕЛАТЬ ПЕРЕВОД", func() {})
 
-	imgUser := canvas.NewImageFromFile("D:/secondcurse/4sem/oop/banksystem/banksystem/internal/images/userLogo.png")
+	imgUser := canvas.NewImageFromFile("./internal/images/userLogo.png")
 	imgUser.SetMinSize(fyne.NewSize(50, 50))
-	imgEmail := canvas.NewImageFromFile("D:/secondcurse/4sem/oop/banksystem/banksystem/internal/images/email.png")
+	imgEmail := canvas.NewImageFromFile("./internal/images/email.png")
 	imgEmail.SetMinSize(fyne.NewSize(50, 50))
-	imgPlus := canvas.NewImageFromFile("D:/secondcurse/4sem/oop/banksystem/banksystem/internal/images/plus.png")
-	imgPlus.SetMinSize(fyne.NewSize(150, 150))
-
-	borderHeading := canvas.NewRectangle(color.Black)
-	borderHeading.StrokeWidth = 2
-	borderHeading.StrokeColor = color.Black
-	borderHeading.FillColor = color.Transparent
+	imgPlus := canvas.NewImageFromFile("./internal/images/plus.png")
+	imgPlus.SetMinSize(fyne.NewSize(100, 100))
 
 	borderNameInfo := widget.NewLabelWithStyle(fmt.Sprintf("%s %s %s", user.Surname, user.Name, user.MiddleName), fyne.TextAlignCenter, fyne.TextStyle{})
 	borderEmailInfo := widget.NewLabelWithStyle(fmt.Sprintf(user.Email), fyne.TextAlignCenter, fyne.TextStyle{})
 
-	border1 := container.NewStack(borderHeading, borderNameInfo)
-	border2 := container.NewStack(borderHeading, borderEmailInfo)
+	border1 := container.NewStack(newRectangle(), borderNameInfo)
+	border2 := container.NewStack(newRectangle(), borderEmailInfo)
 
-	form := container.NewVBox(
-		container.NewHBox(imgUser, border1),
-		container.NewHBox(imgEmail, border2),
+	form := container.NewGridWithRows(2,
+		container.New(layout.NewGridLayoutWithColumns(2), container.NewCenter(imgUser), border1),
+		container.New(layout.NewGridLayoutWithColumns(2), container.NewCenter(imgEmail), border2),
 	)
 
 	debitBody := container.NewGridWithRows(5,
@@ -69,24 +64,32 @@ func MakeBankPage(bank *model.Bank, user *model.User, account *model.User_Accoun
 		container.NewHBox(layout.NewSpacer(), imgPlus, layout.NewSpacer()),
 	)
 
-	debit_account := container.NewStack(borderHeading, debitBody)
-	saving_account := container.NewStack(borderHeading, savingBody)
-	credit_account := container.NewStack(borderHeading, creditBody)
-	accounts := container.NewGridWithColumns(3, debit_account, saving_account, credit_account)
+	debitAccount := container.NewStack(newRectangle(), debitBody)
+	savingAccount := container.NewStack(newRectangle(), savingBody)
+	creditAccount := container.NewStack(newRectangle(), creditBody)
+	accounts := container.NewGridWithColumns(3, debitAccount, savingAccount, creditAccount)
 
 	mainContainer := container.NewVBox(
 		heading,
 		layout.NewSpacer(),
-		container.NewHBox(layout.NewSpacer(), form),
+		container.NewGridWithColumns(3, layout.NewSpacer(), layout.NewSpacer(), form),
 		layout.NewSpacer(),
-		Label1,
+		label1,
 		layout.NewSpacer(),
 		accounts,
 		layout.NewSpacer(),
-		Label2,
+		label2,
 		layout.NewSpacer(),
 		transferButton,
 		layout.NewSpacer(),
 	)
 	return mainContainer
+}
+
+func newRectangle() *canvas.Rectangle {
+	rect := &canvas.Rectangle{}
+	rect.StrokeWidth = 2
+	rect.StrokeColor = color.Black
+	rect.FillColor = color.Transparent
+	return rect
 }

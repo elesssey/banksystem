@@ -9,7 +9,7 @@ import (
 
 type BankStorage interface {
 	Fetch(limit int) ([]*model.Bank, error)
-	FindUserAccount(user_id int) (*model.User_Account, error)
+	FindUserAccount(user_id int) (*model.UserAccount, error)
 }
 
 type sqlBankStorage struct {
@@ -70,26 +70,24 @@ func (s *sqlBankStorage) Fetch(limit int) ([]*model.Bank, error) {
 	return banks, nil
 }
 
-func (s *sqlBankStorage) FindUserAccount(user_id int) (*model.User_Account, error) {
+func (s *sqlBankStorage) FindUserAccount(userId int) (*model.UserAccount, error) {
 	query := `SELECT id, number, balance, currency, user_id, bank_id FROM user_account WHERE user_id = ?`
-	row := s.db.QueryRow(query, user_id)
-	user_account := &model.User_Account{}
+	row := s.db.QueryRow(query, userId)
+	userAccount := &model.UserAccount{}
 	err := row.Scan(
-		&user_account.ID,
-		&user_account.Number,
-		&user_account.Balance,
-		&user_account.Currency,
-		&user_account.User_id,
-		&user_account.Bank_id,
+		&userAccount.ID,
+		&userAccount.Number,
+		&userAccount.Balance,
+		&userAccount.Currency,
+		&userAccount.UserId,
+		&userAccount.BankId,
 	)
 
 	if err == sql.ErrNoRows {
 		return nil, errors.New("user account not found")
-	}
-
-	if err != nil {
+	} else if err != nil {
 		return nil, err
 	}
 
-	return user_account, nil
+	return userAccount, nil
 }

@@ -12,7 +12,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeBankPage(bank *model.Bank, user *model.User, account *model.UserAccount) fyne.CanvasObject {
+func MakeBankPage(onTransactionClick func(), bank *model.Bank, user *model.User, account *model.UserAccount) fyne.CanvasObject {
 	heading := widget.NewLabelWithStyle(bank.Name, fyne.TextAlignLeading, fyne.TextStyle{})
 
 	label1 := canvas.NewText("Существующие счета:", color.Black)
@@ -27,7 +27,7 @@ func MakeBankPage(bank *model.Bank, user *model.User, account *model.UserAccount
 
 	infButton := widget.NewButton("Посмотреть информацию", func() {})
 	infButton.Resize(fyne.NewSize(200, 50))
-	transferButton := widget.NewButton("СДЕЛАТЬ ПЕРЕВОД", func() {})
+	transferButton := widget.NewButton("СДЕЛАТЬ ПЕРЕВОД", func() { onTransactionClick() })
 
 	imgUser := canvas.NewImageFromFile("./internal/images/userLogo.png")
 	imgUser.SetMinSize(fyne.NewSize(50, 50))

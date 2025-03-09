@@ -17,6 +17,7 @@ const (
 	ScreenLogin
 	ScreenBankSelector
 	ScreenBank
+	ScreenTransaction
 )
 
 type NavigationManager struct {
@@ -74,8 +75,18 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
 			return
 		}
-		n.window.SetContent(MakeBankPage(n.state.Banks.Banks[n.state.Banks.SelectedBankIndex], user, user_account))
+		n.window.SetContent(MakeBankPage(n.openTransactionPage, n.state.Banks.Banks[n.state.Banks.SelectedBankIndex], user, user_account))
+
+	case ScreenTransaction:
+		user := n.state.User.GetCurrentUser()
+		user_account, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.SelectedBankIndex)
+		if err != nil {
+			n.showError(err.Error(), func() { n.navigateTo(ScreenBank) })
+			return
+		}
+		n.window.SetContent(MakeTransactionPage(user, user_account, n.state.Banks))
 	}
+
 }
 
 func (n *NavigationManager) showError(message string, onOk func()) {

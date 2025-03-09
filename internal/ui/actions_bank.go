@@ -22,6 +22,10 @@ func (n *NavigationManager) initializeBankPageData() error {
 	return nil
 }
 
+func (n *NavigationManager) openTransactionPage() {
+	n.navigateTo(ScreenTransaction)
+}
+
 func (n *NavigationManager) openBankPage(index int) {
 	n.state.Banks.SelectedBankIndex = index
 	n.navigateTo(ScreenBank)

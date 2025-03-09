@@ -27,9 +27,9 @@ func MakeBankSelectorScreen(onBankClick func(int), bank1, bank2, bank3 *model.Ba
 	)
 
 	bankCards := container.NewGridWithColumns(3,
-		MakeBankCard(onBankClick, bank1, 0),
-		MakeBankCard(onBankClick, bank2, 1),
-		MakeBankCard(onBankClick, bank3, 2),
+		MakeBankCard(onBankClick, bank1, 1),
+		MakeBankCard(onBankClick, bank2, 2),
+		MakeBankCard(onBankClick, bank3, 3),
 	)
 	return container.NewVBox(heading, Label1, bankCards, form)
 }

@@ -21,7 +21,7 @@ func MakeBankPage(bank *model.Bank, user *model.User, account *model.UserAccount
 	debitLabel2 := canvas.NewText("Номер счета:", color.Black)
 	debitLabel3 := canvas.NewText("Баланс:", color.Black)
 	debitNumber := widget.NewLabelWithStyle(account.Number, fyne.TextAlignCenter, fyne.TextStyle{})
-	debitBalance := widget.NewLabelWithStyle(fmt.Sprintf("%f", account.Balance), fyne.TextAlignCenter, fyne.TextStyle{})
+	debitBalance := widget.NewLabelWithStyle(fmt.Sprintf("%.2f %s", account.Balance, account.Currency), fyne.TextAlignCenter, fyne.TextStyle{})
 	savingLabel := widget.NewLabelWithStyle("Накопительный счет", fyne.TextAlignCenter, fyne.TextStyle{})
 	creditLabel := widget.NewLabelWithStyle("Кредиторный счет", fyne.TextAlignCenter, fyne.TextStyle{})
 

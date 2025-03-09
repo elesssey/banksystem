@@ -61,6 +61,7 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 	case ScreenLogin:
 		n.window.SetContent(MakeLoginScreen(n.onLoginClick, n.handleSuccessfulLogin))
 	case ScreenBankSelector:
+
 		if err := n.initializeBankPageData(); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
 			return
@@ -68,7 +69,7 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 		n.window.SetContent(MakeBankSelectorScreen(n.openBankPage, n.state.Banks.Banks[0], n.state.Banks.Banks[1], n.state.Banks.Banks[2]))
 	case ScreenBank:
 		user := n.state.User.GetCurrentUser()
-		user_account, err := n.bankingService.GetUserAccount(user.ID)
+		user_account, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.SelectedBankIndex)
 		if err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
 			return

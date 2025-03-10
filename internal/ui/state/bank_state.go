@@ -4,30 +4,23 @@ import "banksystem/internal/model"
 
 type BanksState struct {
 	SelectedBankIndex int
+	WorkingAccount    *model.UserAccount
 	TransactionBankId int
 	IsInitialized     bool
-	Banks             [3]*model.Bank
+	BanksList         [3]*model.Bank
 }
 
 func NewBanksState() *BanksState {
 	return &BanksState{}
 }
-func (s *BanksState) GetBanksStateNames() []string {
-	bankNames := []string{s.Banks[0].Name, s.Banks[1].Name, s.Banks[2].Name}
-	return bankNames
-}
-func (s *BanksState) SetTransactionBankByName(bankName string) {
-	for _, bank := range s.Banks {
-		if bank.Name == bankName {
-			s.TransactionBankId = bank.ID
-			return
-		}
-	}
+
+func (s *BanksState) GetCurrentBank() *model.Bank {
+	return s.BanksList[s.SelectedBankIndex]
 }
 
-func (s *BanksState) SetBanks(bank1, bank2, bank3 *model.Bank) {
-	s.Banks[0] = bank1
-	s.Banks[1] = bank2
-	s.Banks[2] = bank3
+func (s *BanksState) SetBanks(banks []*model.Bank) {
+	for i := range 3 {
+		s.BanksList[i] = banks[i]
+	}
 	s.IsInitialized = true
 }

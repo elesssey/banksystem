@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 )
 
 var ErrAccountNotFound = errors.New("account not found")
@@ -13,7 +14,7 @@ type BankStorage interface {
 	Fetch(limit int) ([]*model.Bank, error)
 	FindUserAccount(user_id int, bankId int) (*model.UserAccount, error)
 	FindUserAccountByNumber(bankId int, number string) (*model.UserAccount, error)
-	CreateTransaction(tx model.Transaction) error
+	CreateTransaction(tx *model.Transaction) error
 }
 
 type sqlBankStorage struct {
@@ -118,7 +119,9 @@ func (s *sqlBankStorage) FindUserAccountByNumber(bankId int, number string) (*mo
 	return userAccount, nil
 }
 
-func (s *sqlBankStorage) CreateTransaction(tx model.Transaction) error {
+func (s *sqlBankStorage) CreateTransaction(tx *model.Transaction) error {
+	log.Printf("CreateTransaction \n Amount %v \n SourceBankId %v \n SourceAccountId %v \n DestinationBankId %v \n DestinationAccountId %v \n InitiatedByUserId %v \n SourceAccountType %v \n DestinationAccountType %v \n Status %v \n Type %v \n DestinationAccountNumber %v \n",
+		tx.Amount, tx.SourceBankId, tx.SourceAccountId, tx.DestinationBankId, tx.DestinationAccountId, tx.InitiatedByUserId, tx.SourceAccountType, tx.DestinationAccountType, tx.Status, tx.Type, tx.DestinationAccountNumber)
 	// elisey todo: insert into transaction table
-	return nil
+	return errors.New("not implemented")
 }

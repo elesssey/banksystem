@@ -1,7 +1,8 @@
-package ui
+package screens
 
 import (
 	"banksystem/internal/model"
+	"banksystem/internal/ui/state"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -11,27 +12,28 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeBankSelectorScreen(onBankClick func(int), bank1, bank2, bank3 *model.Bank) fyne.CanvasObject {
+func MakeBankSelectorScreen(onBankClick func(int), banksState *state.BanksState) fyne.CanvasObject {
 	heading := canvas.NewText("Добро пожаловать", color.Black)
 	heading.TextSize = 30
 	heading.Alignment = fyne.TextAlignCenter
 	heading.TextStyle.Bold = true
 
-	Label1 := widget.NewLabelWithStyle("Кратко о наших банках:", fyne.TextAlignLeading, fyne.TextStyle{})
-	Label2 := widget.NewLabelWithStyle("Выберите банк в котором хотите работать", fyne.TextAlignLeading, fyne.TextStyle{})
-	Label3 := widget.NewLabelWithStyle("В любое время вы можете вернуться на эту страницу и выбрать другой банк", fyne.TextAlignLeading, fyne.TextStyle{})
+	shortAboutBanks := widget.NewLabelWithStyle("Кратко о наших банках:", fyne.TextAlignLeading, fyne.TextStyle{})
+	selectTheBank := widget.NewLabelWithStyle("Выберите банк в котором хотите работать", fyne.TextAlignLeading, fyne.TextStyle{})
+	bankChange := widget.NewLabelWithStyle("В любое время вы можете вернуться на эту страницу и выбрать другой банк", fyne.TextAlignLeading, fyne.TextStyle{})
 
-	form := container.New(layout.NewGridLayoutWithRows(2),
-		Label2,
-		Label3,
-	)
+	form := container.New(layout.NewGridLayoutWithRows(2), selectTheBank, bankChange)
 
-	bankCards := container.NewGridWithColumns(3,
-		MakeBankCard(onBankClick, bank1, 1),
-		MakeBankCard(onBankClick, bank2, 2),
-		MakeBankCard(onBankClick, bank3, 3),
+	bankCards := []fyne.CanvasObject{}
+	for i, bank := range banksState.BanksList {
+		bankCards = append(bankCards, MakeBankCard(onBankClick, bank, i))
+	}
+
+	return container.NewVBox(
+		heading, shortAboutBanks,
+		container.NewGridWithColumns(3, bankCards...),
+		form,
 	)
-	return container.NewVBox(heading, Label1, bankCards, form)
 }
 
 func MakeBankCard(onBankClick func(int), bank *model.Bank, index int) fyne.CanvasObject {
@@ -45,18 +47,17 @@ func MakeBankCard(onBankClick func(int), bank *model.Bank, index int) fyne.Canva
 	)
 	heading := container.NewStack(borderHeading, headingContent)
 
-	l1 := widget.NewLabelWithStyle(bank.Descrition, fyne.TextAlignCenter, fyne.TextStyle{})
-	l1.Wrapping = fyne.TextWrapWord
-	l2 := widget.NewLabelWithStyle("Предприятия которые оперирует банк:", fyne.TextAlignCenter, fyne.TextStyle{})
-	text := container.NewVBox(l1, l2)
+	bankDescription := widget.NewLabelWithStyle(bank.Descrition, fyne.TextAlignCenter, fyne.TextStyle{})
+	bankDescription.Wrapping = fyne.TextWrapWord
+	bankEnterprises := widget.NewLabelWithStyle("Предприятия которые оперирует банк:", fyne.TextAlignCenter, fyne.TextStyle{})
+	text := container.NewVBox(bankDescription, bankEnterprises)
 
 	borderBody := canvas.NewRectangle(color.Black)
 	borderBody.StrokeWidth = 2
 	borderBody.StrokeColor = color.Black
 	borderBody.FillColor = color.Transparent
 
-	enterpriceList1 := createEnterpricesConvasList(bank.Enterprises)
-	enterprises := container.NewGridWithColumns(1, enterpriceList1...)
+	enterprises := container.NewGridWithColumns(1, createEnterpricesConvasList(bank.Enterprises)...)
 
 	button := widget.NewButton("Select", func() { onBankClick(index) })
 	button.Importance = widget.HighImportance
@@ -65,8 +66,7 @@ func MakeBankCard(onBankClick func(int), bank *model.Bank, index int) fyne.Canva
 	rating := container.New(layout.NewCustomPaddedLayout(0, 0, 10, 10), container.NewCenter(createStarRating(bank.Rating)))
 	body := container.NewStack(borderBody, container.NewVBox(text, enterprises, buttonContainer, rating))
 
-	mainContainer := container.NewVBox(heading, body)
-	return mainContainer
+	return container.NewVBox(heading, body)
 }
 
 func createEnterpricesConvasList(enterprises []*model.Enterprise) []fyne.CanvasObject {
@@ -78,19 +78,19 @@ func createEnterpricesConvasList(enterprises []*model.Enterprise) []fyne.CanvasO
 }
 
 func createStarRating(count int) fyne.CanvasObject {
-	stars := make([]fyne.CanvasObject, 5)
+	stars := make([]fyne.CanvasObject, 0, 5)
 
-	for i := 0; i < 5; i++ {
-		var star fyne.CanvasObject
+	for i := range 5 {
+		var char string
 		if i < count {
-			star = canvas.NewText("★", color.NRGBA{R: 83, G: 82, B: 237, A: 255})
+			char = "★"
 		} else {
-			star = canvas.NewText("☆", color.NRGBA{R: 83, G: 82, B: 237, A: 255})
+			char = "☆"
 		}
-		star.(*canvas.Text).TextSize = 24
-		stars[i] = star
+		star := canvas.NewText(char, color.NRGBA{R: 83, G: 82, B: 237, A: 255})
+		star.TextSize = 24
+		stars = append(stars, star)
 	}
 
-	rating := container.NewGridWithColumns(5, stars[0], stars[1], stars[2], stars[3], stars[4])
-	return rating
+	return container.NewGridWithColumns(5, stars...)
 }

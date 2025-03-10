@@ -1,15 +1,14 @@
 package state
 
 type AppState struct {
-	User         *UserState
-	Banks        *BanksState
-	Transactions *TransactionState
+	User        *UserState
+	Banks       *BanksState
+	Transaction *TransactionState
 }
 
 func NewAppState() *AppState {
 	return &AppState{
-		User:         NewUserState(),
-		Banks:        NewBanksState(),
-		Transactions: NewTransactionState(),
+		User:  NewUserState(),
+		Banks: NewBanksState(),
 	}
 }

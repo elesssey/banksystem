@@ -1,7 +1,8 @@
-package ui
+package screens
 
 import (
 	"banksystem/internal/model"
+	"banksystem/internal/ui/state"
 	"fmt"
 	"image/color"
 
@@ -12,16 +13,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeBankPage(onTransactionClick func(), bank *model.Bank, user *model.User, account *model.UserAccount) fyne.CanvasObject {
-	heading := widget.NewLabelWithStyle(bank.Name, fyne.TextAlignLeading, fyne.TextStyle{})
+func MakeBankScreen(onTransactionClick func(), banksState *state.BanksState, user *model.User) fyne.CanvasObject {
+	heading := widget.NewLabelWithStyle(banksState.GetCurrentBank().Name, fyne.TextAlignLeading, fyne.TextStyle{})
 
-	label1 := canvas.NewText("Существующие счета:", color.Black)
-	label2 := canvas.NewText("Вы можете перести деньги другому пользователю используя дебетовый счет", color.RGBA{255, 0, 0, 255})
-	debitLabel1 := widget.NewLabelWithStyle("Дебетовый счет", fyne.TextAlignCenter, fyne.TextStyle{})
-	debitLabel2 := canvas.NewText("Номер счета:", color.Black)
-	debitLabel3 := canvas.NewText("Баланс:", color.Black)
-	debitNumber := widget.NewLabelWithStyle(account.Number, fyne.TextAlignCenter, fyne.TextStyle{})
-	debitBalance := widget.NewLabelWithStyle(fmt.Sprintf("%.2f %s", account.Balance, account.Currency), fyne.TextAlignCenter, fyne.TextStyle{})
+	existingAccountsLabel := canvas.NewText("Существующие счета:", color.Black)
+	transferInstructionLabel := canvas.NewText("Вы можете перести деньги другому пользователю используя дебетовый счет", color.RGBA{255, 0, 0, 255})
+	debitAccountLabel := widget.NewLabelWithStyle("Дебетовый счет", fyne.TextAlignCenter, fyne.TextStyle{})
+	accountNumberLabel := canvas.NewText("Номер счета:", color.Black)
+	balanceLabel := canvas.NewText("Баланс:", color.Black)
+	debitNumber := widget.NewLabelWithStyle(banksState.WorkingAccount.Number, fyne.TextAlignCenter, fyne.TextStyle{})
+	debitText := fmt.Sprintf("%.2f %s", banksState.WorkingAccount.Balance, banksState.WorkingAccount.Currency)
+	debitBalance := widget.NewLabelWithStyle(debitText, fyne.TextAlignCenter, fyne.TextStyle{})
 	savingLabel := widget.NewLabelWithStyle("Накопительный счет", fyne.TextAlignCenter, fyne.TextStyle{})
 	creditLabel := widget.NewLabelWithStyle("Кредиторный счет", fyne.TextAlignCenter, fyne.TextStyle{})
 
@@ -48,9 +50,9 @@ func MakeBankPage(onTransactionClick func(), bank *model.Bank, user *model.User,
 	)
 
 	debitBody := container.NewGridWithRows(5,
-		debitLabel1,
-		container.NewHBox(debitLabel2, debitNumber),
-		container.NewHBox(debitLabel3, debitBalance),
+		debitAccountLabel,
+		container.NewHBox(accountNumberLabel, debitNumber),
+		container.NewHBox(balanceLabel, debitBalance),
 		container.NewHBox(layout.NewSpacer(), infButton, layout.NewSpacer()),
 		layout.NewSpacer(),
 	)
@@ -74,22 +76,14 @@ func MakeBankPage(onTransactionClick func(), bank *model.Bank, user *model.User,
 		layout.NewSpacer(),
 		container.NewGridWithColumns(3, layout.NewSpacer(), layout.NewSpacer(), form),
 		layout.NewSpacer(),
-		label1,
+		existingAccountsLabel,
 		layout.NewSpacer(),
 		accounts,
 		layout.NewSpacer(),
-		label2,
+		transferInstructionLabel,
 		layout.NewSpacer(),
 		transferButton,
 		layout.NewSpacer(),
 	)
 	return mainContainer
-}
-
-func newRectangle() *canvas.Rectangle {
-	rect := &canvas.Rectangle{}
-	rect.StrokeWidth = 2
-	rect.StrokeColor = color.Black
-	rect.FillColor = color.Transparent
-	return rect
 }

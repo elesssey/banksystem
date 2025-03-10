@@ -2,10 +2,9 @@ package ui
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"banksystem/internal/service"
+	"banksystem/internal/ui/screens"
 	"banksystem/internal/ui/state"
 )
 
@@ -60,37 +59,30 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 
 	switch screenID {
 	case ScreenLogin:
-		n.window.SetContent(MakeLoginScreen(n.onLoginClick, n.handleSuccessfulLogin))
+		n.window.SetContent(screens.MakeLoginScreen(n.onLoginClick, n.handleSuccessfulLogin))
 	case ScreenBankSelector:
 		if err := n.initializeBankPageData(); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
 			return
 		}
-		n.window.SetContent(MakeBankSelectorScreen(n.openBankPage, n.state.Banks.Banks[0], n.state.Banks.Banks[1], n.state.Banks.Banks[2]))
+		n.window.SetContent(screens.MakeBankSelectorScreen(n.openBankPage, n.state.Banks))
 	case ScreenBank:
 		user := n.state.User.GetCurrentUser()
-		userAccount, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.Banks[n.state.Banks.SelectedBankIndex].ID)
+		userAccount, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.GetCurrentBank().ID)
 		if err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
 			return
 		}
-		n.window.SetContent(MakeBankPage(n.openTransactionPage, n.state.Banks.Banks[n.state.Banks.SelectedBankIndex], user, userAccount))
+		n.state.Banks.WorkingAccount = userAccount
+		n.window.SetContent(screens.MakeBankScreen(n.openTransactionPage, n.state.Banks, user))
 
 	case ScreenTransaction:
 		user := n.state.User.GetCurrentUser()
-		userAccount, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.Banks[n.state.Banks.SelectedBankIndex].ID)
-		if err != nil {
-			n.showError(err.Error(), func() { n.navigateTo(ScreenBank) })
-			return
-		}
-		n.window.SetContent(MakeTransactionPage(n.onCreateTransactionClick, n.onCreateTransactionError, user, userAccount, n.state.Banks))
+		n.state.Transaction = state.NewTransactionState(
+			n.state.Banks.BanksList, user,
+			n.state.Banks.WorkingAccount,
+			n.state.Banks.GetCurrentBank(),
+		)
+		n.window.SetContent(screens.MakeTransactionScreen(n.createTransaction, n.onCreateTransactionError, n.state.Transaction))
 	}
-}
-
-func (n *NavigationManager) showError(message string, onOk func()) {
-	n.currentScreen = ScreenError
-	n.window.SetContent(container.NewVBox(
-		widget.NewLabel(message),
-		widget.NewButton("OK", onOk),
-	))
 }

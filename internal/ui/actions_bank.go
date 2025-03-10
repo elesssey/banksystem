@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"banksystem/internal/model"
 	"fmt"
 )
 
@@ -19,7 +18,7 @@ func (n *NavigationManager) initializeBankPageData() error {
 		return fmt.Errorf("ошибка: Меньше трех банков в хранилище")
 	}
 
-	n.state.Banks.SetBanks(banks[0], banks[1], banks[2])
+	n.state.Banks.SetBanks(banks)
 	return nil
 }
 
@@ -30,16 +29,4 @@ func (n *NavigationManager) openTransactionPage() {
 func (n *NavigationManager) openBankPage(index int) {
 	n.state.Banks.SelectedBankIndex = index
 	n.navigateTo(ScreenBank)
-}
-
-func (n *NavigationManager) onCreateTransactionClick(tx model.Transaction) error {
-	err := n.bankingService.CreateTransaction(tx)
-	if err != nil {
-		return fmt.Errorf("ошибка: %v", err)
-	}
-	return nil
-}
-
-func (n *NavigationManager) onCreateTransactionError(err error) {
-	n.showError(err.Error(), func() { n.navigateTo(ScreenBank) })
 }

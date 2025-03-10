@@ -7,9 +7,13 @@ import (
 	"fmt"
 )
 
+var ErrAccountNotFound = errors.New("account not found")
+
 type BankStorage interface {
 	Fetch(limit int) ([]*model.Bank, error)
-	FindUserAccount(user_id int, bankIndex int) (*model.UserAccount, error)
+	FindUserAccount(user_id int, bankId int) (*model.UserAccount, error)
+	FindUserAccountByNumber(bankId int, number string) (*model.UserAccount, error)
+	CreateTransaction(tx model.Transaction) error
 }
 
 type sqlBankStorage struct {
@@ -70,26 +74,9 @@ func (s *sqlBankStorage) Fetch(limit int) ([]*model.Bank, error) {
 	return banks, nil
 }
 
-func (s *sqlBankStorage) FindUserAccount(userId int, bankIndex int) (*model.UserAccount, error) {
-	// query := `SELECT id, name, bic, address, description, rating FROM bank WHERE id = ?`
-	// row := s.db.QueryRow(query, bankIndex)
-	// bank := &model.Bank{}
-	// err := row.Scan(
-	// 	&bank.ID,
-	// 	&bank.Name,
-	// 	&bank.BIC,
-	// 	&bank.Descrition,
-	// 	&bank.Rating,
-	// )
-
-	// if err == sql.ErrNoRows {
-	// 	return nil, errors.New("bank not found")
-	// } else if err != nil {
-	// 	return nil, err
-	// }
-
-	query := `SELECT id, number, balance, currency, user_id, bank_id FROM user_account WHERE user_id = ? and bank_id = ?`
-	row := s.db.QueryRow(query, userId, bankIndex)
+func (s *sqlBankStorage) FindUserAccount(userId int, bankId int) (*model.UserAccount, error) {
+	query := `SELECT id, number, balance, currency, user_id, bank_id FROM user_account WHERE user_id = ? AND bank_id = ?`
+	row := s.db.QueryRow(query, userId, bankId)
 	userAccount := &model.UserAccount{}
 	err := row.Scan(
 		&userAccount.ID,
@@ -101,10 +88,37 @@ func (s *sqlBankStorage) FindUserAccount(userId int, bankIndex int) (*model.User
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, errors.New("user account not found")
+		return nil, ErrAccountNotFound
 	} else if err != nil {
 		return nil, err
 	}
 
 	return userAccount, nil
+}
+
+func (s *sqlBankStorage) FindUserAccountByNumber(bankId int, number string) (*model.UserAccount, error) {
+	query := `SELECT id, number, balance, currency, user_id, bank_id FROM user_account WHERE number = ? AND bank_id = ?`
+	row := s.db.QueryRow(query, number, bankId)
+	userAccount := &model.UserAccount{}
+	err := row.Scan(
+		&userAccount.ID,
+		&userAccount.Number,
+		&userAccount.Balance,
+		&userAccount.Currency,
+		&userAccount.UserId,
+		&userAccount.BankId,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, ErrAccountNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return userAccount, nil
+}
+
+func (s *sqlBankStorage) CreateTransaction(tx model.Transaction) error {
+	// elisey todo: insert into transaction table
+	return nil
 }

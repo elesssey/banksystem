@@ -17,7 +17,12 @@ func (s *BanksState) GetBanksStateNames() []string {
 	return bankNames
 }
 func (s *BanksState) SetTransactionBankByName(bankName string) {
-
+	for _, bank := range s.Banks {
+		if bank.Name == bankName {
+			s.TransactionBankId = bank.ID
+			return
+		}
+	}
 }
 
 func (s *BanksState) SetBanks(bank1, bank2, bank3 *model.Bank) {

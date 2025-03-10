@@ -62,7 +62,6 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 	case ScreenLogin:
 		n.window.SetContent(MakeLoginScreen(n.onLoginClick, n.handleSuccessfulLogin))
 	case ScreenBankSelector:
-
 		if err := n.initializeBankPageData(); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
 			return
@@ -70,23 +69,22 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 		n.window.SetContent(MakeBankSelectorScreen(n.openBankPage, n.state.Banks.Banks[0], n.state.Banks.Banks[1], n.state.Banks.Banks[2]))
 	case ScreenBank:
 		user := n.state.User.GetCurrentUser()
-		user_account, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.SelectedBankIndex)
+		userAccount, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.Banks[n.state.Banks.SelectedBankIndex].ID)
 		if err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
 			return
 		}
-		n.window.SetContent(MakeBankPage(n.openTransactionPage, n.state.Banks.Banks[n.state.Banks.SelectedBankIndex], user, user_account))
+		n.window.SetContent(MakeBankPage(n.openTransactionPage, n.state.Banks.Banks[n.state.Banks.SelectedBankIndex], user, userAccount))
 
 	case ScreenTransaction:
 		user := n.state.User.GetCurrentUser()
-		user_account, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.SelectedBankIndex)
+		userAccount, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.Banks[n.state.Banks.SelectedBankIndex].ID)
 		if err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenBank) })
 			return
 		}
-		n.window.SetContent(MakeTransactionPage(user, user_account, n.state.Banks))
+		n.window.SetContent(MakeTransactionPage(n.onCreateTransactionClick, n.onCreateTransactionError, user, userAccount, n.state.Banks))
 	}
-
 }
 
 func (n *NavigationManager) showError(message string, onOk func()) {

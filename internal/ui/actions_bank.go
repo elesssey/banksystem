@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"banksystem/internal/model"
 	"fmt"
 )
 
@@ -29,4 +30,16 @@ func (n *NavigationManager) openTransactionPage() {
 func (n *NavigationManager) openBankPage(index int) {
 	n.state.Banks.SelectedBankIndex = index
 	n.navigateTo(ScreenBank)
+}
+
+func (n *NavigationManager) onCreateTransactionClick(tx model.Transaction) error {
+	err := n.bankingService.CreateTransaction(tx)
+	if err != nil {
+		return fmt.Errorf("ошибка: %v", err)
+	}
+	return nil
+}
+
+func (n *NavigationManager) onCreateTransactionError(err error) {
+	n.showError(err.Error(), func() { n.navigateTo(ScreenBank) })
 }

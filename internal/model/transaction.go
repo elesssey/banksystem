@@ -36,5 +36,6 @@ type Transaction struct {
 	SourceBankId             int
 	DestinationBankId        int
 	InitiatedByUserId        int
+	SourseAccountNumber      string
 	DestinationAccountNumber string
 }

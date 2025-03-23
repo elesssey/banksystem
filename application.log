@@ -1,0 +1,31 @@
+2025/03/23 18:02:31 Account number:  BY86AKBB30141000000000000000
+2025/03/23 18:02:43 Account number:  BY86AKBB30141000000000000000
+2025/03/23 18:27:27 Account number:  BY86AKBB30141000000000000000
+2025/03/23 18:30:36 Account number:  BY86AKBB30141000000000000000
+2025/03/23 18:30:36 asdasdasdasdasdasd
+2025/03/23 18:33:20 Account number:  BY86AKBB30141000000000000000
+2025/03/23 18:33:20 asdasdasdasdasdasd
+2025/03/23 18:37:07 Account number:  BY86AKBB30141000000000000000
+2025/03/23 18:37:07 asdasdasdasdasdasd
+2025/03/23 18:42:59 Account number:  BY86AKBB30141000000000000000
+2025/03/23 18:42:59 asdasdasdasdasdasd
+2025/03/23 18:42:59 33333333333
+2025/03/23 18:47:22 Account number:  BY86AKBB30141000000000000000
+2025/03/23 18:47:22 asdasdasdasdasdasd
+2025/03/23 18:47:22 2222222222222222
+2025/03/23 18:47:22 CreateTransaction 
+ Amount 121300 
+ SourceBankId 1 
+ SourceAccountId 1 
+ DestinationBankId 1 
+ DestinationAccountId 1 
+ InitiatedByUserId 1 
+ SourceAccountType user 
+ DestinationAccountType user 
+ Status pending 
+ Type transfer 
+ DestinationAccountNumber BY86AKBB30141000000000000000 
+2025/03/23 19:18:42 0
+2025/03/23 19:24:07 0
+2025/03/23 19:31:15 transaction [0xc000000e40]
+2025/03/23 19:35:34 transaction 1,&{1 121300 BYN  pending 1 1 user user transfer 1 1 1  }

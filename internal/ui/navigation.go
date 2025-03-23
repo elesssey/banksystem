@@ -17,6 +17,7 @@ const (
 	ScreenBankSelector
 	ScreenBank
 	ScreenTransaction
+	ScreenAdminMain
 )
 
 type NavigationManager struct {
@@ -65,7 +66,11 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
 			return
 		}
-		n.window.SetContent(screens.MakeBankSelectorScreen(n.openBankPage, n.state.Banks))
+		if n.state.User.GetCurrentUser().Role == "admin" {
+			n.window.SetContent(screens.MakeBankSelectorAdminScreen(n.openAdminMain, n.state.Banks))
+		} else {
+			n.window.SetContent(screens.MakeBankSelectorScreen(n.openBankPage, n.state.Banks))
+		}
 	case ScreenBank:
 		user := n.state.User.GetCurrentUser()
 		userAccount, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.GetCurrentBank().ID)
@@ -84,5 +89,12 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			n.state.Banks.GetCurrentBank(),
 		)
 		n.window.SetContent(screens.MakeTransactionScreen(n.createTransaction, n.onCreateTransactionError, n.state.Transaction))
+	case ScreenAdminMain:
+		if err := n.initializeAdminPageData(n.state.Banks.GetCurrentBank().ID); err != nil {
+			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
+			return
+		}
+		n.window.SetContent(screens.MakeAdminMain(n.state.Transaction))
 	}
+
 }

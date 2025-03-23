@@ -3,7 +3,7 @@ module banksystem
 go 1.22.5
 
 require (
-	fyne.io/fyne/v2 v2.5.4
+	fyne.io/fyne/v2 v2.5.5
 	github.com/mattn/go-sqlite3 v1.14.24
 )
 

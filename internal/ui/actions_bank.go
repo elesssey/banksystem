@@ -22,6 +22,16 @@ func (n *NavigationManager) initializeBankPageData() error {
 	return nil
 }
 
+func (n *NavigationManager) initializeAdminPageData(bankId int) error {
+	transactions, err := n.bankingService.GetTransactions(bankId)
+	if err != nil {
+		return fmt.Errorf("ошибка: %v", err)
+	}
+
+	n.state.Transaction.SetTransactions(transactions)
+	return nil
+}
+
 func (n *NavigationManager) openTransactionPage() {
 	n.navigateTo(ScreenTransaction)
 }
@@ -29,4 +39,9 @@ func (n *NavigationManager) openTransactionPage() {
 func (n *NavigationManager) openBankPage(index int) {
 	n.state.Banks.SelectedBankIndex = index
 	n.navigateTo(ScreenBank)
+}
+
+func (n *NavigationManager) openAdminMain(index int) {
+	n.state.Banks.SelectedBankIndex = index
+	n.navigateTo(ScreenAdminMain)
 }

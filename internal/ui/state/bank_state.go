@@ -3,11 +3,12 @@ package state
 import "banksystem/internal/model"
 
 type BanksState struct {
-	SelectedBankIndex int
-	WorkingAccount    *model.UserAccount
-	TransactionBankId int
-	IsInitialized     bool
-	BanksList         [3]*model.Bank
+	SelectedBankIndex     int
+	WorkingAccount        *model.UserAccount
+	TransactionBankId     int
+	IsInitialized         bool
+	BanksList             [3]*model.Bank
+	AdminTransactionsList []*model.Transaction
 }
 
 func NewBanksState() *BanksState {

@@ -4,7 +4,6 @@ import (
 	"banksystem/internal/model"
 	"banksystem/internal/storage"
 	"errors"
-	"log"
 )
 
 type BankingService interface {
@@ -43,7 +42,6 @@ func (s *bankingService) CreateTransaction(tx *model.Transaction) error {
 	tx.DestinationAccountType = model.AccountTypeUser
 	tx.Status = model.TransactionStatusPending
 	tx.Type = model.TransactionTypeTransfer
-	log.Printf("asdasdasdasdasdasd")
 	sourseAccount, err := s.bankStorage.FindUserAccountByNumber(tx.SourceBankId, tx.SourseAccountNumber)
 	if err != nil {
 		return err
@@ -58,7 +56,6 @@ func (s *bankingService) CreateTransaction(tx *model.Transaction) error {
 		return err
 	}
 	tx.DestinationAccountId = destinationAccount.ID
-	log.Printf("2222222222222222")
 	if err := s.bankStorage.CreateTransaction(tx); err != nil {
 		return err
 	}

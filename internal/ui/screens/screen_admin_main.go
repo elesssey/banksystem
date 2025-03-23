@@ -1,14 +1,14 @@
 package screens
 
 import (
-	"banksystem/internal/ui/state"
+	"banksystem/internal/model"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeAdminMain(transactionState *state.TransactionState) fyne.CanvasObject {
+func MakeAdminMain(transactionState []*model.Transaction) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab()),
 		container.NewTabItem("ЗАРПЛАТНЫЕ ПРОЕКТЫ", MakeSalaryTab()),

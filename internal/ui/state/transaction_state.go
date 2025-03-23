@@ -2,7 +2,6 @@ package state
 
 import (
 	"banksystem/internal/model"
-	"log"
 	"math"
 )
 
@@ -14,7 +13,6 @@ type TransactionState struct {
 	ReceiverBank          *model.Bank
 	ReceiverAccountNumber string
 	Amount                float64
-	TransactionList       []*model.Transaction
 }
 
 func NewTransactionState(
@@ -24,11 +22,10 @@ func NewTransactionState(
 	senderBank *model.Bank,
 ) *TransactionState {
 	return &TransactionState{
-		ToBanksList:     toBanksList,
-		Sender:          sender,
-		SenderAccount:   senderAccount,
-		SenderBank:      senderBank,
-		TransactionList: make([]*model.Transaction, 10),
+		ToBanksList:   toBanksList,
+		Sender:        sender,
+		SenderAccount: senderAccount,
+		SenderBank:    senderBank,
 	}
 }
 
@@ -47,13 +44,6 @@ func (s *TransactionState) SetTransactionBankByName(bankName string) {
 			return
 		}
 	}
-}
-
-func (s *TransactionState) SetTransactions(transactions []*model.Transaction) {
-	for i := range len(transactions) - 1 {
-		s.TransactionList[i] = transactions[i]
-	}
-	log.Printf("sdad %v", s.TransactionList)
 }
 
 func (s *TransactionState) BuildTransaction() *model.Transaction {

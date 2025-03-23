@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"log"
-	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -16,15 +15,6 @@ import (
 )
 
 func main() {
-	logFile, err := os.OpenFile("application.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal("Ошибка при открытии файла логов:", err)
-	}
-	defer logFile.Close()
-
-	// Перенаправляем вывод логов в файл
-	log.SetOutput(logFile)
-
 	db, err := sql.Open("sqlite3", "./banking.db")
 	if err != nil {
 		log.Fatalf("Не удалось подключиться к базе данных: %v", err)
@@ -37,7 +27,6 @@ func main() {
 
 	authService := service.NewAuthService(userStorage)
 	bankingService := service.NewBankingService(bankStorage, transactionStorage)
-	//transactionService:=service.new
 
 	appState := state.NewAppState()
 

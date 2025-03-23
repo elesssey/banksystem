@@ -41,7 +41,6 @@ func MakeTransactionScreen(createTransaction func() error, onError func(error), 
 		txState.ReceiverAccountNumber = accountEntry.Text
 		err = createTransaction()
 		if err != nil {
-			log.Printf("33333333333")
 			onError(err)
 		}
 	})

@@ -28,7 +28,7 @@ func (n *NavigationManager) initializeAdminPageData(bankId int) error {
 		return fmt.Errorf("ошибка: %v", err)
 	}
 
-	n.state.Transaction.SetTransactions(transactions)
+	n.state.Banks.AdminTransactionsList = transactions
 	return nil
 }
 

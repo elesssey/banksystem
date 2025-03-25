@@ -38,4 +38,6 @@ type Transaction struct {
 	InitiatedByUserId        int
 	SourseAccountNumber      string
 	DestinationAccountNumber string
+	SourceAccountUser        *User
+	DestinationAccountUser   *User
 }

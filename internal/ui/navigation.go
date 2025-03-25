@@ -67,7 +67,7 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			return
 		}
 		if n.state.User.GetCurrentUser().Role == "admin" {
-			n.window.SetContent(screens.MakeBankSelectorAdminScreen(n.openAdminMain, n.state.Banks))
+			n.window.SetContent(screens.MakeBankSelectorScreen(n.openAdminMain, n.state.Banks))
 		} else {
 			n.window.SetContent(screens.MakeBankSelectorScreen(n.openBankPage, n.state.Banks))
 		}

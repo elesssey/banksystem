@@ -5,8 +5,24 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 )
+
+const tranQuery = `
+	INSERT INTO system_transaction(
+		amount,
+		currency,
+		description,
+		status,
+		source_account_id,
+		destination_account_id,
+		source_account_type,
+		destination_account_type,
+		type,
+		source_bank_id,
+		destination_bank_id,
+		initiated_by_user_id
+	)VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+	`
 
 var ErrAccountNotFound = errors.New("account not found")
 
@@ -120,13 +136,7 @@ func (s *sqlBankStorage) FindUserAccountByNumber(bankId int, number string) (*mo
 }
 
 func (s *sqlBankStorage) CreateTransaction(tx *model.Transaction) error {
-	log.Printf("CreateTransaction \n Amount %v \n SourceBankId %v \n SourceAccountId %v \n DestinationBankId %v \n DestinationAccountId %v \n InitiatedByUserId %v \n SourceAccountType %v \n DestinationAccountType %v \n Status %v \n Type %v \n DestinationAccountNumber %v \n",
-		tx.Amount, tx.SourceBankId, tx.SourceAccountId, tx.DestinationBankId, tx.DestinationAccountId, tx.InitiatedByUserId, tx.SourceAccountType, tx.DestinationAccountType, tx.Status, tx.Type, tx.DestinationAccountNumber)
-	// elisey todo: insert into transaction table
-
-	sql := `INSERT INTO system_transaction(amount,currency,description,status,source_account_id,destination_account_id,source_account_type,destination_account_type,type,source_bank_id,destination_bank_id,initiated_by_user_id)
-	VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
-	_, err := s.db.Exec(sql, tx.Amount, tx.Сurrency, tx.Description, tx.Status, tx.SourceAccountId, tx.DestinationAccountId, tx.SourceAccountType, tx.DestinationAccountType, tx.Type, tx.SourceBankId, tx.DestinationBankId, tx.InitiatedByUserId)
+	_, err := s.db.Exec(tranQuery, tx.Amount, tx.Сurrency, tx.Description, tx.Status, tx.SourceAccountId, tx.DestinationAccountId, tx.SourceAccountType, tx.DestinationAccountType, tx.Type, tx.SourceBankId, tx.DestinationBankId, tx.InitiatedByUserId)
 	if err != nil {
 		return err
 	}

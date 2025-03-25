@@ -2,15 +2,16 @@ package screens
 
 import (
 	"banksystem/internal/model"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeAdminMain(transactionState []*model.Transaction) fyne.CanvasObject {
+func MakeAdminMain(transactions []*model.Transaction) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
-		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab()),
+		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions)),
 		container.NewTabItem("ЗАРПЛАТНЫЕ ПРОЕКТЫ", MakeSalaryTab()),
 		container.NewTabItem("КРЕДИТЫ", MakeCreditTab()),
 		container.NewTabItem("РАССРОЧКИ", MakeInstallmentTab()),
@@ -18,7 +19,7 @@ func MakeAdminMain(transactionState []*model.Transaction) fyne.CanvasObject {
 	return tabs
 }
 
-func MakeTransactionTab() fyne.CanvasObject {
+func MakeTransactionTab(transactions []*model.Transaction) fyne.CanvasObject {
 
 	table := widget.NewTable(
 		// Размер таблицы
@@ -27,7 +28,7 @@ func MakeTransactionTab() fyne.CanvasObject {
 		},
 		// Шаблон ячейки
 		func() fyne.CanvasObject {
-			return widget.NewLabel("utiiutitk")
+			return widget.NewLabel("")
 		},
 		// Обновление содержимого
 		func(id widget.TableCellID, cell fyne.CanvasObject) {
@@ -50,7 +51,26 @@ func MakeTransactionTab() fyne.CanvasObject {
 				}
 				label.TextStyle = fyne.TextStyle{Bold: true}
 			} else {
+				for i := range transactions {
+					if id.Row == i+1 {
+						switch id.Col {
+						case 0:
+							label.SetText(strconv.Itoa(i + 1))
 
+						case 1:
+							//label.SetText()
+
+						case 2:
+							//label.SetText(string(transaction.Amount))
+						case 3:
+							//label.SetText(transactionState.)
+						case 4:
+							//label.SetText(transactionState.ReceiverBank.Name)
+
+						}
+					}
+
+				}
 			}
 
 		},

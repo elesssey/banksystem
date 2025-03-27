@@ -6,10 +6,14 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
 func MakeAdminMain(transactions []*model.Transaction) fyne.CanvasObject {
+	//agreeButton := widget.NewButton("+", func() {})
+	//disagreeButton := widget.NewButton("-", func() {})
+
 	tabs := container.NewAppTabs(
 		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions)),
 		container.NewTabItem("ЗАРПЛАТНЫЕ ПРОЕКТЫ", MakeSalaryTab()),
@@ -19,7 +23,23 @@ func MakeAdminMain(transactions []*model.Transaction) fyne.CanvasObject {
 	return tabs
 }
 
+func MakeButtons(length int, button1 fyne.CanvasObject, button2 fyne.CanvasObject) []fyne.CanvasObject {
+	buttons := container.NewHBox(button1, button2)
+	rowsButtons := make([]fyne.CanvasObject, 0, 10)
+	rowsButtons = append(rowsButtons, layout.NewSpacer())
+	for i := 0; i < length; i++ {
+		rowsButtons = append(rowsButtons, buttons)
+	}
+	for i := length; i < 10; i++ {
+		rowsButtons = append(rowsButtons, layout.NewSpacer())
+	}
+	return rowsButtons
+}
+
 func MakeTransactionTab(transactions []*model.Transaction) fyne.CanvasObject {
+
+	//agreeButton := widget.NewButton("+", func() {})
+	//disagreeButton := widget.NewButton("-", func() {})
 
 	table := widget.NewTable(
 		// Размер таблицы
@@ -51,21 +71,22 @@ func MakeTransactionTab(transactions []*model.Transaction) fyne.CanvasObject {
 				}
 				label.TextStyle = fyne.TextStyle{Bold: true}
 			} else {
-				for i := range transactions {
+				for i /*, transaction */ := range transactions {
 					if id.Row == i+1 {
 						switch id.Col {
 						case 0:
 							label.SetText(strconv.Itoa(i + 1))
 
 						case 1:
-							//label.SetText()
+							//log.Printf("%s %s", transaction.Type, transaction.SourceAccountUser.Name)
+							//label.SetText(fmt.Sprintf("%s %s %s", transaction.SourceAccountUser.Surname, transaction.SourceAccountUser.Name, transaction.SourceAccountUser.MiddleName))
 
 						case 2:
-							//label.SetText(string(transaction.Amount))
+						//	label.SetText(string(transaction.Amount))
 						case 3:
-							//label.SetText(transactionState.)
+							//label.SetText(transaction.DestinationAccountUser.Surname + transaction.DestinationAccountUser.Name + transaction.DestinationAccountUser.MiddleName)
 						case 4:
-							//label.SetText(transactionState.ReceiverBank.Name)
+							//label.SetText(tra)
 
 						}
 					}
@@ -81,11 +102,10 @@ func MakeTransactionTab(transactions []*model.Transaction) fyne.CanvasObject {
 	table.SetColumnWidth(2, 180)
 	table.SetColumnWidth(3, 200)
 	table.SetColumnWidth(4, 170)
-	// tableContainer := container.NewVBox(
-	// 	container.NewHBox(table, layout.NewSpacer()),
-	// 	layout.NewSpacer(),
-	// )
 
+	//mainButtons := container.NewGridWithRows(11, MakeButtons(len(transactions), agreeButton, disagreeButton)...)
+
+	//mainContainer := container.NewHBox(table, mainButtons)
 	return table
 }
 

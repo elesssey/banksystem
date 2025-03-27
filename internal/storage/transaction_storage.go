@@ -4,11 +4,11 @@ import (
 	"banksystem/internal/model"
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 type UserWithAccount struct {
 	ID             int
-	Password       string
 	Name           string
 	MiddleName     string
 	Surname        string
@@ -103,12 +103,10 @@ func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.
 		user.name, 
 		user.middlename, 
 		user.surname, 
-		user.password,
 		user.passport_series,
 		user.passport_number,
 		user.phone,
 		user.email,
-		user.role,	
 		user_account.number 
 	FROM user JOIN user_account ON user.id = user_account.user_id 
 	WHERE user_account.number IN (`
@@ -120,14 +118,13 @@ func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.
 			queryMiddle += `?,`
 
 		} else {
-			queryMiddle = `?`
+			queryMiddle += `?`
 		}
 	}
 	erows, err := s.db.Query(queryStart+queryMiddle+queryEnd, transactionNumbers...)
 	if err != nil {
 		return nil, fmt.Errorf("не получается достать аккаунты rows: %w", err)
 	}
-	//запрос будет с inner join надо соединить таблицу аккаунтов юзеров и моделей юзеров по user.Id и фильтровать по аккаунту
 
 	for erows.Next() {
 		user := &UserWithAccount{}
@@ -144,6 +141,7 @@ func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.
 		); err != nil {
 			return nil, fmt.Errorf("не получается достать пользователей с их аккаунтами scan: %w", err)
 		}
+		log.Printf("%s", user.Name)
 		for _, transaction := range transactions {
 			modelUser := model.User{
 				ID:             user.ID,
@@ -155,6 +153,7 @@ func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.
 				Phone:          user.Phone,
 				Email:          user.Email,
 			}
+			log.Printf("%s", modelUser.Name)
 			if transaction.DestinationAccountNumber == user.AccountNumber {
 				transaction.DestinationAccountUser = &modelUser
 			} else if transaction.SourseAccountNumber == user.AccountNumber {

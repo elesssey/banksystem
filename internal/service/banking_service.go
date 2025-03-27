@@ -30,7 +30,7 @@ func (s *bankingService) GetBanks() ([]*model.Bank, error) {
 }
 
 func (s *bankingService) GetTransactions(bankId int) ([]*model.Transaction, error) {
-	return s.transactionStorage.Fetch(10, bankId)
+	return s.transactionStorage.FetchwithUsers(10, bankId)
 }
 
 func (s *bankingService) GetUserAccount(userId, bankId int) (*model.UserAccount, error) {

@@ -58,7 +58,6 @@ func MakeTransactionTab(transactions []*model.Transaction) fyne.CanvasObject {
 			if id.Row == 0 {
 				switch id.Col {
 				case 0:
-
 					label.SetText("#")
 				case 1:
 					label.SetText("ФИО ОТПРАВИТЕЛЯ")

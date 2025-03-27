@@ -4,20 +4,7 @@ import (
 	"banksystem/internal/model"
 	"database/sql"
 	"fmt"
-	"log"
 )
-
-type UserWithAccount struct {
-	ID             int
-	Name           string
-	MiddleName     string
-	Surname        string
-	PassportSeries string
-	PassportNumber string
-	Phone          string
-	Email          string
-	AccountNumber  string
-}
 
 const fetchQuery = `
 	SELECT 
@@ -92,10 +79,10 @@ func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.
 	if err != nil {
 		return nil, fmt.Errorf("не получается достать транзакции rows: %w", err)
 	}
-	transactionNumbers := make([]any, 0, len(transactions)*2)
 
+	transactionId := make([]any, 0, len(transactions)*2)
 	for _, tx := range transactions {
-		transactionNumbers = append(transactionNumbers, tx.SourseAccountNumber, tx.DestinationAccountNumber)
+		transactionId = append(transactionId, tx.SourceAccountId, tx.DestinationAccountId)
 	}
 
 	queryStart := `SELECT 
@@ -107,56 +94,64 @@ func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.
 		user.passport_number,
 		user.phone,
 		user.email,
-		user_account.number 
+		user_account.id 
 	FROM user JOIN user_account ON user.id = user_account.user_id 
-	WHERE user_account.number IN (`
+	WHERE user_account.id IN (`
 	queryMiddle := ``
 	queryEnd := `)`
 
-	for i := range transactionNumbers {
-		if i < len(transactionNumbers)-1 {
+	for i := range transactionId {
+		if i < len(transactionId)-1 {
 			queryMiddle += `?,`
 
 		} else {
 			queryMiddle += `?`
 		}
 	}
-	erows, err := s.db.Query(queryStart+queryMiddle+queryEnd, transactionNumbers...)
+	erows, err := s.db.Query(queryStart+queryMiddle+queryEnd, transactionId...)
 	if err != nil {
 		return nil, fmt.Errorf("не получается достать аккаунты rows: %w", err)
 	}
 
 	for erows.Next() {
-		user := &UserWithAccount{}
+		var userWithAccountId struct {
+			ID             int
+			Name           string
+			MiddleName     string
+			Surname        string
+			PassportSeries string
+			PassportNumber string
+			Phone          string
+			Email          string
+			AccountId      int
+		}
 		if err := erows.Scan(
-			&user.ID,
-			&user.Name,
-			&user.MiddleName,
-			&user.Surname,
-			&user.PassportSeries,
-			&user.PassportNumber,
-			&user.Phone,
-			&user.Email,
-			&user.AccountNumber,
+			&userWithAccountId.ID,
+			&userWithAccountId.Name,
+			&userWithAccountId.MiddleName,
+			&userWithAccountId.Surname,
+			&userWithAccountId.PassportSeries,
+			&userWithAccountId.PassportNumber,
+			&userWithAccountId.Phone,
+			&userWithAccountId.Email,
+			&userWithAccountId.AccountId,
 		); err != nil {
 			return nil, fmt.Errorf("не получается достать пользователей с их аккаунтами scan: %w", err)
 		}
-		log.Printf("%s", user.Name)
 		for _, transaction := range transactions {
 			modelUser := model.User{
-				ID:             user.ID,
-				Name:           user.Name,
-				MiddleName:     user.MiddleName,
-				Surname:        user.Surname,
-				PassportSeries: user.PassportSeries,
-				PassportNumber: user.PassportNumber,
-				Phone:          user.Phone,
-				Email:          user.Email,
+				ID:             userWithAccountId.ID,
+				Name:           userWithAccountId.Name,
+				MiddleName:     userWithAccountId.MiddleName,
+				Surname:        userWithAccountId.Surname,
+				PassportSeries: userWithAccountId.PassportSeries,
+				PassportNumber: userWithAccountId.PassportNumber,
+				Phone:          userWithAccountId.Phone,
+				Email:          userWithAccountId.Email,
 			}
-			log.Printf("%s", modelUser.Name)
-			if transaction.DestinationAccountNumber == user.AccountNumber {
+			if transaction.DestinationAccountId == userWithAccountId.AccountId {
 				transaction.DestinationAccountUser = &modelUser
-			} else if transaction.SourseAccountNumber == user.AccountNumber {
+			} else if transaction.SourceAccountId == userWithAccountId.AccountId {
 				transaction.SourceAccountUser = &modelUser
 			}
 		}

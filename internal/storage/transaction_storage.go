@@ -84,6 +84,7 @@ func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.
 	for _, tx := range transactions {
 		transactionId = append(transactionId, tx.SourceAccountId, tx.DestinationAccountId)
 	}
+	fmt.Println(transactionId)
 
 	queryStart := `SELECT 
 		user.id,

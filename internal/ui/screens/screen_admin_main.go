@@ -2,6 +2,8 @@ package screens
 
 import (
 	"banksystem/internal/model"
+	"fmt"
+	"log"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -70,22 +72,22 @@ func MakeTransactionTab(transactions []*model.Transaction) fyne.CanvasObject {
 				}
 				label.TextStyle = fyne.TextStyle{Bold: true}
 			} else {
-				for i /*, transaction */ := range transactions {
+				for i, transaction := range transactions {
 					if id.Row == i+1 {
 						switch id.Col {
 						case 0:
 							label.SetText(strconv.Itoa(i + 1))
 
 						case 1:
-							//log.Printf("%s %s", transaction.Type, transaction.SourceAccountUser.Name)
-							//label.SetText(fmt.Sprintf("%s %s %s", transaction.SourceAccountUser.Surname, transaction.SourceAccountUser.Name, transaction.SourceAccountUser.MiddleName))
+							log.Printf("%v", transaction)
+							label.SetText(fmt.Sprintf("%s %s %s", transaction.SourceAccountUser.Surname, transaction.SourceAccountUser.Name, transaction.SourceAccountUser.MiddleName))
 
 						case 2:
-						//	label.SetText(string(transaction.Amount))
+							label.SetText(fmt.Sprintf("%d", transaction.Amount))
 						case 3:
-							//label.SetText(transaction.DestinationAccountUser.Surname + transaction.DestinationAccountUser.Name + transaction.DestinationAccountUser.MiddleName)
+							label.SetText(transaction.DestinationAccountUser.Surname + transaction.DestinationAccountUser.Name + transaction.DestinationAccountUser.MiddleName)
 						case 4:
-							//label.SetText(tra)
+							// label.SetText(transaction)
 
 						}
 					}

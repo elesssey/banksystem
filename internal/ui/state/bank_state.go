@@ -25,3 +25,12 @@ func (s *BanksState) SetBanks(banks []*model.Bank) {
 	}
 	s.IsInitialized = true
 }
+
+func (s *BanksState) FindBankNameById(id int) string {
+	for _, bank := range s.BanksList {
+		if bank.ID == id {
+			return bank.Name
+		}
+	}
+	return ""
+}

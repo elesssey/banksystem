@@ -31,6 +31,7 @@ type BankStorage interface {
 	FindUserAccount(user_id int, bankId int) (*model.UserAccount, error)
 	FindUserAccountByNumber(bankId int, number string) (*model.UserAccount, error)
 	CreateTransaction(tx *model.Transaction) error
+	FindUserAccountByAccountId(bankId int, accountId int) (*model.UserAccount, error)
 }
 
 type sqlBankStorage struct {
@@ -92,7 +93,7 @@ func (s *sqlBankStorage) Fetch(limit int) ([]*model.Bank, error) {
 }
 
 func (s *sqlBankStorage) FindUserAccount(userId int, bankId int) (*model.UserAccount, error) {
-	query := `SELECT id, number, balance, currency, user_id, bank_id FROM user_account WHERE user_id = ? AND bank_id = ?`
+	query := `SELECT id, number, balance, currency, user_id, bank_id, hold_balance FROM user_account WHERE user_id = ? AND bank_id = ?`
 	row := s.db.QueryRow(query, userId, bankId)
 	userAccount := &model.UserAccount{}
 	err := row.Scan(
@@ -102,6 +103,7 @@ func (s *sqlBankStorage) FindUserAccount(userId int, bankId int) (*model.UserAcc
 		&userAccount.Currency,
 		&userAccount.UserId,
 		&userAccount.BankId,
+		&userAccount.HoldBalance,
 	)
 
 	if err == sql.ErrNoRows {
@@ -114,7 +116,7 @@ func (s *sqlBankStorage) FindUserAccount(userId int, bankId int) (*model.UserAcc
 }
 
 func (s *sqlBankStorage) FindUserAccountByNumber(bankId int, number string) (*model.UserAccount, error) {
-	query := `SELECT id, number, balance, currency, user_id, bank_id FROM user_account WHERE number = ? AND bank_id = ?`
+	query := `SELECT id, number, balance, currency, user_id, bank_id, hold_balance FROM user_account WHERE number = ? AND bank_id = ?`
 	row := s.db.QueryRow(query, number, bankId)
 	userAccount := &model.UserAccount{}
 	err := row.Scan(
@@ -124,6 +126,7 @@ func (s *sqlBankStorage) FindUserAccountByNumber(bankId int, number string) (*mo
 		&userAccount.Currency,
 		&userAccount.UserId,
 		&userAccount.BankId,
+		&userAccount.HoldBalance,
 	)
 
 	if err == sql.ErrNoRows {
@@ -140,6 +143,50 @@ func (s *sqlBankStorage) CreateTransaction(tx *model.Transaction) error {
 	if err != nil {
 		return err
 	}
+	dbtx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET balance = balance - ? WHERE id =?`, tx.Amount, tx.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET hold_balance = hold_balance + ? WHERE id =?`, tx.Amount, tx.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	err = dbtx.Commit()
+	if err != nil {
+		return err
+	}
 	return nil
 
+}
+
+func (s *sqlBankStorage) FindUserAccountByAccountId(bankId int, accountId int) (*model.UserAccount, error) {
+	query := `SELECT id, number, balance, currency, user_id, bank_id, hold_balance FROM user_account WHERE id = ? AND bank_id = ?`
+	row := s.db.QueryRow(query, accountId, bankId)
+	userAccount := &model.UserAccount{}
+	err := row.Scan(
+		&userAccount.ID,
+		&userAccount.Number,
+		&userAccount.Balance,
+		&userAccount.Currency,
+		&userAccount.UserId,
+		&userAccount.BankId,
+		&userAccount.HoldBalance,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, ErrAccountNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return userAccount, nil
 }

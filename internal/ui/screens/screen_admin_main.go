@@ -4,7 +4,6 @@ import (
 	"banksystem/internal/model"
 	"fmt"
 	"log"
-	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -12,12 +11,12 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeAdminMain(transactions []*model.Transaction) fyne.CanvasObject {
+func MakeAdminMain(transactions []*model.Transaction, findById func(int) string, confirm func(*model.Transaction) error) fyne.CanvasObject {
 	//agreeButton := widget.NewButton("+", func() {})
 	//disagreeButton := widget.NewButton("-", func() {})
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions)),
+		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions, findById, confirm)),
 		container.NewTabItem("ЗАРПЛАТНЫЕ ПРОЕКТЫ", MakeSalaryTab()),
 		container.NewTabItem("КРЕДИТЫ", MakeCreditTab()),
 		container.NewTabItem("РАССРОЧКИ", MakeInstallmentTab()),
@@ -25,70 +24,70 @@ func MakeAdminMain(transactions []*model.Transaction) fyne.CanvasObject {
 	return tabs
 }
 
-func MakeButtons(length int, button1 fyne.CanvasObject, button2 fyne.CanvasObject) []fyne.CanvasObject {
-	buttons := container.NewHBox(button1, button2)
-	rowsButtons := make([]fyne.CanvasObject, 0, 10)
-	rowsButtons = append(rowsButtons, layout.NewSpacer())
-	for i := 0; i < length; i++ {
-		rowsButtons = append(rowsButtons, buttons)
-	}
-	for i := length; i < 10; i++ {
-		rowsButtons = append(rowsButtons, layout.NewSpacer())
-	}
-	return rowsButtons
-}
-
-func MakeTransactionTab(transactions []*model.Transaction) fyne.CanvasObject {
-
-	//agreeButton := widget.NewButton("+", func() {})
-	//disagreeButton := widget.NewButton("-", func() {})
+func MakeTransactionTab(transactions []*model.Transaction, findById func(int) string, confirm func(*model.Transaction) error) fyne.CanvasObject {
 
 	table := widget.NewTable(
 		// Размер таблицы
 		func() (int, int) {
-			return 11, 5
+			return 11, 7
 		},
 		// Шаблон ячейки
 		func() fyne.CanvasObject {
-			return widget.NewLabel("")
+			cellContainer := container.NewCenter(container.New(layout.NewCustomPaddedLayout(20, 20, 20, 20)))
+			return cellContainer
 		},
 		// Обновление содержимого
 		func(id widget.TableCellID, cell fyne.CanvasObject) {
-			label := cell.(*widget.Label)
-			label.Alignment = fyne.TextAlignCenter
+			myContainer := cell.(*fyne.Container)
 
 			if id.Row == 0 {
 				switch id.Col {
 				case 0:
-					label.SetText("#")
+					myContainer.Add(widget.NewLabel("#"))
 				case 1:
-					label.SetText("ФИО ОТПРАВИТЕЛЯ")
+					myContainer.Add(widget.NewLabel("ФИО ОТПРАВИТЕЛЯ"))
 				case 2:
-					label.SetText("СУММА")
+					myContainer.Add(widget.NewLabel("СУММА"))
 				case 3:
-					label.SetText("ФИО ПОЛУЧАТЕЛЯ")
+					myContainer.Add(widget.NewLabel("ФИО ПОЛУЧАТЕЛЯ"))
 				case 4:
-					label.SetText("БАНК")
+					myContainer.Add(widget.NewLabel("БАНК"))
+				case 5:
+					myContainer.Add(widget.NewLabel("ПОДТВЕРЖДЕНИЕ"))
+
 				}
-				label.TextStyle = fyne.TextStyle{Bold: true}
+
 			} else {
 				for i, transaction := range transactions {
+					if transaction.Status == "completed" {
+						continue
+					}
 					if id.Row == i+1 {
 						switch id.Col {
 						case 0:
-							label.SetText(strconv.Itoa(i + 1))
-
+							myContainer.Add(widget.NewLabel(fmt.Sprintf("%d", i+1)))
 						case 1:
 							log.Printf("%v", transaction)
-							label.SetText(fmt.Sprintf("%s %s %s", transaction.SourceAccountUser.Surname, transaction.SourceAccountUser.Name, transaction.SourceAccountUser.MiddleName))
-
+							myContainer.Add(widget.NewLabel(fmt.Sprintf("%s %s %s", transaction.SourceAccountUser.Surname, transaction.SourceAccountUser.Name, transaction.SourceAccountUser.MiddleName)))
 						case 2:
-							label.SetText(fmt.Sprintf("%d", transaction.Amount))
+							myContainer.Add(widget.NewLabel(fmt.Sprintf("%d", transaction.Amount)))
 						case 3:
-							label.SetText(transaction.DestinationAccountUser.Surname + transaction.DestinationAccountUser.Name + transaction.DestinationAccountUser.MiddleName)
+							myContainer.Add(widget.NewLabel(fmt.Sprintf("%s %s %s", transaction.DestinationAccountUser.Surname, transaction.DestinationAccountUser.Name, transaction.DestinationAccountUser.MiddleName)))
 						case 4:
-							// label.SetText(transaction)
+							bank := findById(transaction.DestinationBankId)
+							myContainer.Add(widget.NewLabel(bank))
+						case 5:
+							confirmLabel := widget.NewHyperlink("ПОДТВЕРДИТЬ", nil)
+							confirmLabel.OnTapped = func() {
+								confirm(transaction)
+							}
+							unConfirmLabel := widget.NewHyperlink("ОТКЛОНИТЬ", nil)
+							unConfirmLabel.OnTapped = func() {
 
+							}
+							separator := widget.NewLabel(" | ")
+							linkContainer := container.NewHBox(confirmLabel, separator, unConfirmLabel)
+							myContainer.Add(linkContainer)
 						}
 					}
 
@@ -101,8 +100,9 @@ func MakeTransactionTab(transactions []*model.Transaction) fyne.CanvasObject {
 	table.SetColumnWidth(0, 50)
 	table.SetColumnWidth(1, 200)
 	table.SetColumnWidth(2, 180)
-	table.SetColumnWidth(3, 200)
+	table.SetColumnWidth(3, 250)
 	table.SetColumnWidth(4, 170)
+	table.SetColumnWidth(5, 300)
 
 	//mainButtons := container.NewGridWithRows(11, MakeButtons(len(transactions), agreeButton, disagreeButton)...)
 

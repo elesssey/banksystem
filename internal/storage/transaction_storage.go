@@ -27,6 +27,8 @@ const fetchQuery = `
 type TransactionStorage interface {
 	Fetch(limit int, bankId int) ([]*model.Transaction, error)
 	FetchwithUsers(limit int, bankId int) ([]*model.Transaction, error)
+	FetchCurrentTransaction(id int) (*model.Transaction, error)
+	ConfirmTransaction(transaction *model.Transaction) error
 }
 
 type sqlTransactionStorage struct {
@@ -162,4 +164,60 @@ func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.
 	}
 
 	return transactions, nil
+}
+
+func (s *sqlTransactionStorage) FetchCurrentTransaction(id int) (*model.Transaction, error) {
+	query := `SELECT id,amount,currency,
+		description,status,source_account_id,
+		destination_account_id,source_account_type,
+		destination_account_type,type,source_bank_id,
+		destination_bank_id,initiated_by_user_id
+              FROM system_transaction WHERE id = ?`
+
+	row := s.db.QueryRow(query, id)
+
+	transaction := &model.Transaction{}
+	err := row.Scan(
+		&transaction.Id,
+		&transaction.Amount,
+		&transaction.Сurrency,
+		&transaction.Description,
+		&transaction.Status,
+		&transaction.SourceAccountId,
+		&transaction.DestinationAccountId,
+		&transaction.SourceAccountType,
+		&transaction.DestinationAccountType,
+		&transaction.Type,
+		&transaction.SourceBankId,
+		&transaction.DestinationBankId,
+		&transaction.InitiatedByUserId,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("не получается достать транзакцию scan: %w", err)
+	}
+	return transaction, nil
+}
+
+func (s *sqlTransactionStorage) ConfirmTransaction(transaction *model.Transaction) error {
+	dbtx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	_, err = dbtx.Exec(`UPDATE user_account SET hold_balance =  hold_balance - ? WHERE id =?`, transaction.Amount, transaction.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET balance = balance + ? WHERE id =?`, transaction.Amount, transaction.DestinationAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	err = dbtx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }

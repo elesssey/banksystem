@@ -4,6 +4,7 @@ import (
 	"banksystem/internal/model"
 	"banksystem/internal/storage"
 	"errors"
+	"log"
 )
 
 type BankingService interface {
@@ -11,6 +12,7 @@ type BankingService interface {
 	GetUserAccount(userId int, bankId int) (*model.UserAccount, error)
 	CreateTransaction(tx *model.Transaction) error
 	GetTransactions(bankId int) ([]*model.Transaction, error)
+	TransactionConfirmation(id int) error
 }
 
 type bankingService struct {
@@ -51,12 +53,39 @@ func (s *bankingService) CreateTransaction(tx *model.Transaction) error {
 		return errors.New("недостаточно средств")
 	}
 
+	sourseAccount.HoldBalance = float64(tx.Amount)
+
 	destinationAccount, err := s.bankStorage.FindUserAccountByNumber(tx.DestinationBankId, tx.DestinationAccountNumber)
 	if err != nil {
 		return err
 	}
 	tx.DestinationAccountId = destinationAccount.ID
 	if err := s.bankStorage.CreateTransaction(tx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *bankingService) TransactionConfirmation(id int) error {
+	log.Printf("dasdasd")
+	transaction, err := s.transactionStorage.FetchCurrentTransaction(id)
+	if err != nil {
+		return err
+	}
+	log.Printf("%d %d %d", transaction.SourceAccountId, transaction.SourceBankId, transaction.Amount)
+	sourceAccount, err := s.bankStorage.FindUserAccountByAccountId(transaction.SourceBankId, transaction.SourceAccountId)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("%f %f", sourceAccount.Balance, sourceAccount.HoldBalance)
+	if sourceAccount.HoldBalance < float64(transaction.Amount) {
+		return errors.New("не достаточно средств у отправителя")
+	}
+
+	err = s.transactionStorage.ConfirmTransaction(transaction)
+	if err != nil {
 		return err
 	}
 

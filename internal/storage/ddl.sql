@@ -47,6 +47,7 @@ create table user_account (
     'currency' text not null,
     'user_id' integer not null,
     'bank_id' integer not null,
+    'hold_balance' integer not null default 0,
     foreign key (bank_id) references bank(id)
 );
 create unique index idx_user_account_number on user_account(number);

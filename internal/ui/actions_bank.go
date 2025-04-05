@@ -27,8 +27,11 @@ func (n *NavigationManager) initializeAdminPageData(bankId int) error {
 	if err != nil {
 		return fmt.Errorf("ошибка: %v", err)
 	}
-
-	n.state.Banks.AdminTransactionsList = transactions
+	for _, transaction := range transactions {
+		if transaction.Status == "pending" {
+			n.state.Banks.AdminTransactionsList = append(n.state.Banks.AdminTransactionsList, transaction)
+		}
+	}
 	return nil
 }
 

@@ -13,6 +13,7 @@ type BankingService interface {
 	CreateTransaction(tx *model.Transaction) error
 	GetTransactions(bankId int) ([]*model.Transaction, error)
 	TransactionConfirmation(id int) error
+	TransactionDeclination(id int) error
 }
 
 type bankingService struct {
@@ -83,11 +84,23 @@ func (s *bankingService) TransactionConfirmation(id int) error {
 	if sourceAccount.HoldBalance < float64(transaction.Amount) {
 		return errors.New("не достаточно средств у отправителя")
 	}
-
+	log.Printf("1111")
 	err = s.transactionStorage.ConfirmTransaction(transaction)
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func (s *bankingService) TransactionDeclination(id int) error {
+	transaction, err := s.transactionStorage.FetchCurrentTransaction(id)
+	if err != nil {
+		return err
+	}
+	err = s.transactionStorage.DeclineTransaction(transaction)
+	if err != nil {
+		return err
+	}
 	return nil
 }

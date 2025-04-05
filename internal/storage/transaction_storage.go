@@ -29,6 +29,7 @@ type TransactionStorage interface {
 	FetchwithUsers(limit int, bankId int) ([]*model.Transaction, error)
 	FetchCurrentTransaction(id int) (*model.Transaction, error)
 	ConfirmTransaction(transaction *model.Transaction) error
+	DeclineTransaction(transaction *model.Transaction) error
 }
 
 type sqlTransactionStorage struct {
@@ -210,6 +211,41 @@ func (s *sqlTransactionStorage) ConfirmTransaction(transaction *model.Transactio
 	}
 
 	_, err = dbtx.Exec(`UPDATE user_account SET balance = balance + ? WHERE id =?`, transaction.Amount, transaction.DestinationAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE system_transaction SET status = ? WHERE id =?`, "completed", transaction.Id)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	err = dbtx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *sqlTransactionStorage) DeclineTransaction(transaction *model.Transaction) error {
+	dbtx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET hold_balance =  hold_balance - ? WHERE id =?`, transaction.Amount, transaction.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET balance = balance + ? WHERE id =?`, transaction.Amount, transaction.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+	_, err = dbtx.Exec(`UPDATE system_transaction SET status = ? WHERE id =?`, "cancelled", transaction.Id)
 	if err != nil {
 		dbtx.Rollback()
 		return err

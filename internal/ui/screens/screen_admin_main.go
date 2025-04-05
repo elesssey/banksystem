@@ -11,12 +11,12 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeAdminMain(transactions []*model.Transaction, findById func(int) string, confirm func(*model.Transaction) error) fyne.CanvasObject {
+func MakeAdminMain(transactions []*model.Transaction, findById func(int) string, confirm func(*model.Transaction) error, decline func(*model.Transaction) error) fyne.CanvasObject {
 	//agreeButton := widget.NewButton("+", func() {})
 	//disagreeButton := widget.NewButton("-", func() {})
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions, findById, confirm)),
+		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions, findById, confirm, decline)),
 		container.NewTabItem("ЗАРПЛАТНЫЕ ПРОЕКТЫ", MakeSalaryTab()),
 		container.NewTabItem("КРЕДИТЫ", MakeCreditTab()),
 		container.NewTabItem("РАССРОЧКИ", MakeInstallmentTab()),
@@ -24,7 +24,7 @@ func MakeAdminMain(transactions []*model.Transaction, findById func(int) string,
 	return tabs
 }
 
-func MakeTransactionTab(transactions []*model.Transaction, findById func(int) string, confirm func(*model.Transaction) error) fyne.CanvasObject {
+func MakeTransactionTab(transactions []*model.Transaction, findById func(int) string, confirm func(*model.Transaction) error, decline func(*model.Transaction) error) fyne.CanvasObject {
 
 	table := widget.NewTable(
 		// Размер таблицы
@@ -59,9 +59,6 @@ func MakeTransactionTab(transactions []*model.Transaction, findById func(int) st
 
 			} else {
 				for i, transaction := range transactions {
-					if transaction.Status == "completed" {
-						continue
-					}
 					if id.Row == i+1 {
 						switch id.Col {
 						case 0:
@@ -77,16 +74,12 @@ func MakeTransactionTab(transactions []*model.Transaction, findById func(int) st
 							bank := findById(transaction.DestinationBankId)
 							myContainer.Add(widget.NewLabel(bank))
 						case 5:
-							confirmLabel := widget.NewHyperlink("ПОДТВЕРДИТЬ", nil)
-							confirmLabel.OnTapped = func() {
-								confirm(transaction)
-							}
-							unConfirmLabel := widget.NewHyperlink("ОТКЛОНИТЬ", nil)
-							unConfirmLabel.OnTapped = func() {
+							agreeButton := widget.NewButton("ПОДТВЕРДИТЬ", func() { confirm(transaction) })
 
-							}
+							disagreeButton := widget.NewButton("ОТКЛОНИТЬ", func() { decline(transaction) })
+
 							separator := widget.NewLabel(" | ")
-							linkContainer := container.NewHBox(confirmLabel, separator, unConfirmLabel)
+							linkContainer := container.NewHBox(agreeButton, separator, disagreeButton)
 							myContainer.Add(linkContainer)
 						}
 					}

@@ -3,6 +3,7 @@ package ui
 import (
 	"banksystem/internal/model"
 	"fmt"
+	"log"
 )
 
 func (n *NavigationManager) createTransaction() error {
@@ -22,6 +23,7 @@ func (n *NavigationManager) onCreateTransactionError(err error) {
 }
 
 func (n *NavigationManager) adminConfirmationTransaction(transaction *model.Transaction) error {
+	log.Printf("sqweqwe")
 	n.bankingService.TransactionConfirmation(transaction.Id)
 	n.navigateTo(ScreenAdminMain)
 	return nil

@@ -94,6 +94,6 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
 			return
 		}
-		n.window.SetContent(screens.MakeAdminMain(n.state.Banks.AdminTransactionsList, n.state.Banks.FindBankNameById, n.adminConfirmationTransaction))
+		n.window.SetContent(screens.MakeAdminMain(n.state.Banks.AdminTransactionsList, n.state.Banks.FindBankNameById, n.adminConfirmationTransaction, n.adminDeclineTransaction))
 	}
 }

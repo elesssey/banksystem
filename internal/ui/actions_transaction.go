@@ -28,3 +28,9 @@ func (n *NavigationManager) adminConfirmationTransaction(transaction *model.Tran
 	n.navigateTo(ScreenAdminMain)
 	return nil
 }
+
+func (n *NavigationManager) adminDeclineTransaction(transaction *model.Transaction) error {
+	n.bankingService.TransactionDeclination(transaction.Id)
+	n.navigateTo(ScreenAdminMain)
+	return nil
+}

@@ -50,7 +50,7 @@ func (s *bankingService) CreateTransaction(tx *model.Transaction) error {
 		return err
 	}
 
-	if sourseAccount.Balance*100 < float64(tx.Amount) {
+	if sourseAccount.Balance < float64(tx.Amount) {
 		return errors.New("недостаточно средств")
 	}
 
@@ -78,6 +78,9 @@ func (s *bankingService) TransactionConfirmation(id int) error {
 	sourceAccount, err := s.bankStorage.FindUserAccountByAccountId(transaction.SourceBankId, transaction.SourceAccountId)
 	if err != nil {
 		return err
+	}
+	if transaction.Status != model.TransactionStatusPending {
+		return errors.New("транзакция уже подтверждена")
 	}
 
 	log.Printf("%f %f", sourceAccount.Balance, sourceAccount.HoldBalance)

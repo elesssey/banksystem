@@ -11,6 +11,7 @@ var ErrInvalidEmail = errors.New("invalid email")
 
 type AuthService interface {
 	Login(email, password string) (*model.User, error)
+	Registrate(user *model.User, bankId int) error
 }
 
 type authService struct {
@@ -34,4 +35,12 @@ func (s *authService) Login(email, password string) (*model.User, error) {
 		}
 		return nil, ErrInvalidCredentials
 	}
+}
+
+func (s *authService) Registrate(user *model.User, bankId int) error {
+	err := s.userStorage.AddNewUserWithAccount(user, bankId)
+	if err != nil {
+		return err
+	}
+	return nil
 }

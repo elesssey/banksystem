@@ -8,11 +8,9 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-
-	"banksystem/internal/model"
 )
 
-func MakeLoginScreen(onLoginTry func(string, string), onLoginOk func(user *model.User)) fyne.CanvasObject {
+func MakeLoginScreen(onLoginTry func(string, string)) fyne.CanvasObject {
 	heading := canvas.NewText("BANK-SYSTEM", color.Black)
 	heading.TextSize = 30
 	heading.Alignment = fyne.TextAlignCenter

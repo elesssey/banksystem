@@ -1,6 +1,7 @@
 package screens
 
 import (
+	"errors"
 	"fmt"
 	"image/color"
 	"log"
@@ -32,6 +33,10 @@ func MakeTransactionScreen(createTransaction func() error, onError func(error), 
 	amountEntry := widget.NewEntry()
 
 	button := widget.NewButton("ПЕРЕВЕСТИ ДЕНЬГИ", func() {
+		if txState.ReceiverBank == nil {
+			onError(errors.New("вы не выбрали банк получателя"))
+			return
+		}
 		amount, err := strconv.ParseFloat(amountEntry.Text, 64)
 		if err != nil {
 			onError(err)

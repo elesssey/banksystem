@@ -24,5 +24,5 @@ func (n *NavigationManager) onLoginClick(email string, password string) {
 func (n *NavigationManager) handleSuccessfulLogin(user *model.User) {
 	n.state.User.SetCurrentUser(user)
 	n.navigateTo(ScreenBankSelector)
-	dialog.ShowInformation("Info", "You are logged in!", n.window)
+	dialog.ShowInformation("Информация!", "Вы вошли в аккаунт!", n.window)
 }

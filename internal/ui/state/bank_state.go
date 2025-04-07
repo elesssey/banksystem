@@ -34,3 +34,11 @@ func (s *BanksState) FindBankNameById(id int) string {
 	}
 	return ""
 }
+
+func (s *BanksState) GetBankStateNames() []string {
+	bankNames := []string{}
+	for _, bank := range s.BanksList {
+		bankNames = append(bankNames, bank.Name)
+	}
+	return bankNames
+}

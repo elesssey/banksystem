@@ -18,6 +18,7 @@ const (
 	ScreenBank
 	ScreenTransaction
 	ScreenAdminMain
+	ScreenRegistrate
 )
 
 type NavigationManager struct {
@@ -48,7 +49,7 @@ func NewNavigationManager(
 }
 
 func (n *NavigationManager) Start() {
-	n.navigateTo(ScreenLogin)
+	n.navigateTo(ScreenRegistrate)
 }
 
 func (n *NavigationManager) navigateTo(screenID ScreenID) {
@@ -60,7 +61,7 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 
 	switch screenID {
 	case ScreenLogin:
-		n.window.SetContent(screens.MakeLoginScreen(n.onLoginClick, n.handleSuccessfulLogin))
+		n.window.SetContent(screens.MakeLoginScreen(n.onLoginClick))
 	case ScreenBankSelector:
 		if err := n.initializeBankPageData(); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
@@ -95,5 +96,11 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			return
 		}
 		n.window.SetContent(screens.MakeAdminMain(n.state.Banks.AdminTransactionsList, n.state.Banks.FindBankNameById, n.adminConfirmationTransaction, n.adminDeclineTransaction))
+	case ScreenRegistrate:
+		if err := n.initializeBankPageData(); err != nil {
+			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
+			return
+		}
+		n.window.SetContent(screens.MakeRegistratePage(n.onRegistrateClick, n.state.Banks))
 	}
 }

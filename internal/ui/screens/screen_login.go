@@ -10,7 +10,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeLoginScreen(onLoginTry func(string, string)) fyne.CanvasObject {
+func MakeLoginScreen(onLoginTry func(string, string), onRegistrationStartClick func()) fyne.CanvasObject {
 	heading := canvas.NewText("BANK-SYSTEM", color.Black)
 	heading.TextSize = 30
 	heading.Alignment = fyne.TextAlignCenter
@@ -39,7 +39,7 @@ func MakeLoginScreen(onLoginTry func(string, string)) fyne.CanvasObject {
 	)
 
 	signUpText := widget.NewLabel("don't have an account?")
-	signUpButton := widget.NewButton("SIGN UP", func() {})
+	signUpButton := widget.NewButton("SIGN UP", func() { onRegistrationStartClick() })
 	signUpButton.Importance = widget.MediumImportance
 
 	signUpContainer := container.New(layout.NewGridLayout(2),

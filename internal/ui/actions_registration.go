@@ -6,6 +6,10 @@ import (
 	"fyne.io/fyne/v2/dialog"
 )
 
+func (n *NavigationManager) RegistrationStart() {
+	n.navigateTo(ScreenRegistrate)
+}
+
 func (n *NavigationManager) onRegistrateClick(user *model.User, bankId int) {
 	if len(user.Password) < 6 {
 		n.showError("Введите пароль хотя бы из шести символов", func() { n.navigateTo(ScreenRegistrate) })
@@ -50,6 +54,6 @@ func (n *NavigationManager) onRegistrateClick(user *model.User, bankId int) {
 
 func (n *NavigationManager) handleSuccessfulRegistrate(user *model.User) {
 	n.state.User.SetCurrentUser(user)
-	n.navigateTo(ScreenBankSelector)
+	n.navigateTo(ScreenLogin)
 	dialog.ShowInformation("Информация:", "Вы зарегистрировались!", n.window)
 }

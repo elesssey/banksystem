@@ -49,7 +49,7 @@ func NewNavigationManager(
 }
 
 func (n *NavigationManager) Start() {
-	n.navigateTo(ScreenRegistrate)
+	n.navigateTo(ScreenLogin)
 }
 
 func (n *NavigationManager) navigateTo(screenID ScreenID) {
@@ -61,7 +61,7 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 
 	switch screenID {
 	case ScreenLogin:
-		n.window.SetContent(screens.MakeLoginScreen(n.onLoginClick))
+		n.window.SetContent(screens.MakeLoginScreen(n.onLoginClick, n.RegistrationStart))
 	case ScreenBankSelector:
 		if err := n.initializeBankPageData(); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })

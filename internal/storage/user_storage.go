@@ -3,6 +3,7 @@ package storage
 import (
 	"database/sql"
 	"errors"
+	"log"
 
 	"math/big"
 	"math/rand"
@@ -108,7 +109,7 @@ func (s *sqlUserStorage) AddNewUserWithAccount(user *model.User, bankId int) err
 		return err
 	}
 
-	row, err := s.db.Exec(
+	row, err := dbtx.Exec(
 		`INSERT INTO user(
 			name,
 			middlename,
@@ -129,16 +130,17 @@ func (s *sqlUserStorage) AddNewUserWithAccount(user *model.User, bankId int) err
 	index, err := row.LastInsertId()
 	userId := int(index)
 
+	log.Printf("%s %d %d", mainNumber, userId, bankId)
 	if err != nil {
 		return err
 	}
-	_, err = s.db.Exec(
+	_, err = dbtx.Exec(
 		`INSERT INTO user_account(
 			number,
 			balance,
 			currency,
 			user_id,
-			bank_id,
+			bank_id
 		)VALUES(?,?,?,?,?)`, mainNumber, 0, "BYN", userId, bankId)
 
 	if err != nil {

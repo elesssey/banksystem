@@ -34,9 +34,10 @@ func main() {
 	userStorage := storage.NewSQLUserStorage(db)
 	bankStorage := storage.NewSQLBankStorage(db)
 	transactionStorage := storage.NewSQLTransactionStorage(db)
+	creditStorage := storage.NewSQLTCreditStorage(db)
 
 	authService := service.NewAuthService(userStorage)
-	bankingService := service.NewBankingService(bankStorage, transactionStorage)
+	bankingService := service.NewBankingService(bankStorage, transactionStorage, creditStorage)
 
 	appState := state.NewAppState()
 

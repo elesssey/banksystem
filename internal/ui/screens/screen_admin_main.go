@@ -11,20 +11,18 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeAdminMain(transactions []*model.Transaction, findById func(int) string, confirm func(*model.Transaction) error, decline func(*model.Transaction) error) fyne.CanvasObject {
-	//agreeButton := widget.NewButton("+", func() {})
-	//disagreeButton := widget.NewButton("-", func() {})
+func MakeAdminMain(credits []*model.Credit, transactions []*model.Transaction, findById func(int) string, trConfirm func(*model.Transaction) error, trDecline func(*model.Transaction) error, crConfirm func(*model.Credit) error, crDecline func(*model.Credit) error) fyne.CanvasObject {
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions, findById, confirm, decline)),
+		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions, findById, trConfirm, trDecline)),
 		container.NewTabItem("ЗАРПЛАТНЫЕ ПРОЕКТЫ", MakeSalaryTab()),
-		container.NewTabItem("КРЕДИТЫ", MakeCreditTab()),
+		container.NewTabItem("КРЕДИТЫ", MakeCreditTab(credits, findById, crConfirm, crDecline)),
 		container.NewTabItem("РАССРОЧКИ", MakeInstallmentTab()),
 	)
 	return tabs
 }
 
-func MakeTransactionTab(transactions []*model.Transaction, findById func(int) string, confirm func(*model.Transaction) error, decline func(*model.Transaction) error) fyne.CanvasObject {
+func MakeTransactionTab(transactions []*model.Transaction, findById func(int) string, trConfirm func(*model.Transaction) error, trDecline func(*model.Transaction) error) fyne.CanvasObject {
 
 	table := widget.NewTable(
 		// Размер таблицы
@@ -74,9 +72,9 @@ func MakeTransactionTab(transactions []*model.Transaction, findById func(int) st
 							bank := findById(transaction.DestinationBankId)
 							myContainer.Add(widget.NewLabel(bank))
 						case 5:
-							agreeButton := widget.NewButton("ПОДТВЕРДИТЬ", func() { confirm(transaction) })
+							agreeButton := widget.NewButton("ПОДТВЕРДИТЬ", func() { trConfirm(transaction) })
 
-							disagreeButton := widget.NewButton("ОТКЛОНИТЬ", func() { decline(transaction) })
+							disagreeButton := widget.NewButton("ОТКЛОНИТЬ", func() { trDecline(transaction) })
 
 							separator := widget.NewLabel(" | ")
 							linkContainer := container.NewHBox(agreeButton, separator, disagreeButton)
@@ -96,10 +94,6 @@ func MakeTransactionTab(transactions []*model.Transaction, findById func(int) st
 	table.SetColumnWidth(3, 250)
 	table.SetColumnWidth(4, 170)
 	table.SetColumnWidth(5, 300)
-
-	//mainButtons := container.NewGridWithRows(11, MakeButtons(len(transactions), agreeButton, disagreeButton)...)
-
-	//mainContainer := container.NewHBox(table, mainButtons)
 	return table
 }
 
@@ -153,53 +147,82 @@ func MakeSalaryTab() fyne.CanvasObject {
 	return table
 }
 
-func MakeCreditTab() fyne.CanvasObject {
+func MakeCreditTab(credits []*model.Credit, findById func(int) string, crConfirm func(*model.Credit) error, crDecline func(*model.Credit) error) fyne.CanvasObject {
 
 	table := widget.NewTable(
 		// Размер таблицы
 		func() (int, int) {
-			return 11, 5
+			return 11, 7
 		},
 		// Шаблон ячейки
 		func() fyne.CanvasObject {
-			return widget.NewLabel("")
+			cellContainer := container.NewCenter(container.New(layout.NewCustomPaddedLayout(20, 20, 20, 20)))
+			return cellContainer
 		},
 		// Обновление содержимого
 		func(id widget.TableCellID, cell fyne.CanvasObject) {
-			label := cell.(*widget.Label)
-			label.Alignment = fyne.TextAlignCenter
+			myContainer := cell.(*fyne.Container)
 
 			if id.Row == 0 {
 				switch id.Col {
 				case 0:
-
-					label.SetText("#")
+					myContainer.Add(widget.NewLabel("#"))
 				case 1:
-					label.SetText("ПОЛЬЗОВАТЕЛЬ")
+					myContainer.Add(widget.NewLabel("ПОЛЬЗОВАТЕЛЬ"))
 				case 2:
-					label.SetText("СУММА")
+					myContainer.Add(widget.NewLabel("СУММА"))
 				case 3:
-					label.SetText("СРОК(мес)")
+					myContainer.Add(widget.NewLabel("СРОК(мес)"))
 				case 4:
-					label.SetText("БАНК")
-				}
-				label.TextStyle = fyne.TextStyle{Bold: true}
-			} else {
+					myContainer.Add(widget.NewLabel("БАНК"))
+				case 5:
+					myContainer.Add(widget.NewLabel("ПОДТВЕРЖДЕНИЕ"))
 
+				}
+
+			} else {
+				for i, credit := range credits {
+					if id.Row == i+1 {
+						switch id.Col {
+						case 0:
+							myContainer.Add(widget.NewLabel(fmt.Sprintf("%d", i+1)))
+						case 1:
+							log.Printf("%v", credit)
+							myContainer.Add(widget.NewLabel(fmt.Sprintf("%s %s %s", credit.SourceAccountUser.Surname, credit.SourceAccountUser.Name, credit.SourceAccountUser.MiddleName)))
+						case 2:
+							myContainer.Add(widget.NewLabel(fmt.Sprintf("%d", credit.Amount)))
+						case 3:
+							myContainer.Add(widget.NewLabel(fmt.Sprintf(credit.Term)))
+						case 4:
+							bank := findById(credit.SourceBankId)
+							myContainer.Add(widget.NewLabel(bank))
+						case 5:
+							agreeButton := widget.NewButton("ПОДТВЕРДИТЬ", func() { crConfirm(credit) })
+
+							disagreeButton := widget.NewButton("ОТКЛОНИТЬ", func() { crDecline(credit) })
+
+							separator := widget.NewLabel(" | ")
+							linkContainer := container.NewHBox(agreeButton, separator, disagreeButton)
+							myContainer.Add(linkContainer)
+						}
+					}
+
+				}
 			}
 
 		},
 	)
-	table.SetColumnWidth(0, 50)
-	table.SetColumnWidth(1, 200)
-	table.SetColumnWidth(2, 180)
-	table.SetColumnWidth(3, 200)
-	table.SetColumnWidth(4, 170)
 
-	// mainContainer := container.NewHBox(
-	// 	table,
-	// 	layout.NewSpacer(),
-	// )
+	table.SetColumnWidth(0, 50)
+	table.SetColumnWidth(1, 300)
+	table.SetColumnWidth(2, 180)
+	table.SetColumnWidth(3, 100)
+	table.SetColumnWidth(4, 200)
+	table.SetColumnWidth(5, 300)
+
+	//mainButtons := container.NewGridWithRows(11, MakeButtons(len(transactions), agreeButton, disagreeButton)...)
+
+	//mainContainer := container.NewHBox(table, mainButtons)
 	return table
 }
 

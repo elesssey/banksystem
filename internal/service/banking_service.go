@@ -11,20 +11,26 @@ type BankingService interface {
 	GetBanks() ([]*model.Bank, error)
 	GetUserAccount(userId int, bankId int) (*model.UserAccount, error)
 	CreateTransaction(tx *model.Transaction) error
+	CreateCredit(cr *model.Credit) error
 	GetTransactions(bankId int) ([]*model.Transaction, error)
+	GetCredits(bankid int) ([]*model.Credit, error)
 	TransactionConfirmation(id int) error
 	TransactionDeclination(id int) error
+	CreditConfirmation(id int) error
+	CreditDeclination(id int) error
 }
 
 type bankingService struct {
 	bankStorage        storage.BankStorage
 	transactionStorage storage.TransactionStorage
+	creditStorage      storage.CreditStorage
 }
 
-func NewBankingService(bankStorage storage.BankStorage, transactionStorage storage.TransactionStorage) BankingService {
+func NewBankingService(bankStorage storage.BankStorage, transactionStorage storage.TransactionStorage, creditStorage storage.CreditStorage) BankingService {
 	return &bankingService{
 		bankStorage:        bankStorage,
 		transactionStorage: transactionStorage,
+		creditStorage:      creditStorage,
 	}
 }
 
@@ -34,6 +40,10 @@ func (s *bankingService) GetBanks() ([]*model.Bank, error) {
 
 func (s *bankingService) GetTransactions(bankId int) ([]*model.Transaction, error) {
 	return s.transactionStorage.FetchwithUsers(10, bankId)
+}
+
+func (s *bankingService) GetCredits(bankId int) ([]*model.Credit, error) {
+	return s.creditStorage.FetchCreditwithUsers(10, bankId)
 }
 
 func (s *bankingService) GetUserAccount(userId, bankId int) (*model.UserAccount, error) {
@@ -105,5 +115,56 @@ func (s *bankingService) TransactionDeclination(id int) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *bankingService) CreditConfirmation(id int) error {
+	credit, err := s.creditStorage.FetchCurrentCredit(id)
+	if err != nil {
+		return err
+	}
+
+	sourceAccount, err := s.bankStorage.FindUserAccountByAccountId(credit.SourceBankId, credit.SourceAccountId)
+	if err != nil {
+		return err
+	}
+	if credit.Status != model.CreditStatusPending {
+		return errors.New("транзакция уже подтверждена")
+	}
+
+	log.Printf("%f %f", sourceAccount.Balance, sourceAccount.HoldBalance)
+
+	err = s.creditStorage.ConfirmCredit(credit)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *bankingService) CreditDeclination(id int) error {
+	credit, err := s.creditStorage.FetchCurrentCredit(id)
+	if err != nil {
+		return err
+	}
+	err = s.creditStorage.DeclineCredit(credit)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *bankingService) CreateCredit(cr *model.Credit) error {
+	cr.Status = model.CreditStatusPending
+	sourseAccount, err := s.bankStorage.FindUserAccountByNumber(cr.SourceBankId, cr.SourseAccountNumber)
+	if err != nil {
+		return err
+	}
+
+	sourseAccount.HoldBalance = float64(cr.Amount)
+
+	if err := s.bankStorage.CreateCredit(cr); err != nil {
+		return err
+	}
+
 	return nil
 }

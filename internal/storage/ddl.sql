@@ -91,6 +91,24 @@ create table system_transaction (
     foreign key (destination_bank_id) references bank(id),
     foreign key (initiated_by_user_id) references user(id)
 );
+
+create table system_credit (
+    'id' integer primary key autoincrement,
+    'amount' integer not null,
+    'term' integer not null,
+    'currency' text not null,
+    'timestamp' datetime not null default current_timestamp,
+    'description' text,
+    'status' text not null default 'pending' 
+        check (status in ('pending', 'completed', 'cancelled')),
+    
+    'source_account_id' integer not null,
+    'source_bank_id' integer not null,
+    'initiated_by_user_id' integer not null,
+    
+    foreign key (source_bank_id) references bank(id),
+    foreign key (initiated_by_user_id) references user(id)
+);
 create index idx_transaction_source_account on system_transaction(source_account_id, source_account_type);
 create index idx_transaction_destination_account on system_transaction(destination_account_id, destination_account_type);
 create index idx_transaction_source_bank on system_transaction(source_bank_id);

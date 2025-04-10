@@ -32,3 +32,15 @@ func (n *NavigationManager) adminDeclineTransaction(transaction *model.Transacti
 	n.navigateTo(ScreenBankSelector)
 	return nil
 }
+
+func (n *NavigationManager) adminConfirmationCredit(credit *model.Credit) error {
+	n.bankingService.CreditConfirmation(credit.Id)
+	n.navigateTo(ScreenBankSelector)
+	return nil
+}
+
+func (n *NavigationManager) adminDeclineCredit(credit *model.Credit) error {
+	n.bankingService.CreditDeclination(credit.Id)
+	n.navigateTo(ScreenBankSelector)
+	return nil
+}

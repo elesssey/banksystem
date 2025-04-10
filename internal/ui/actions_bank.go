@@ -34,11 +34,26 @@ func (n *NavigationManager) initializeAdminPageData(bankId int) error {
 			n.state.Banks.AdminTransactionsList = append(n.state.Banks.AdminTransactionsList, transaction)
 		}
 	}
+
+	credits, err := n.bankingService.GetCredits(bankId)
+	if err != nil {
+		return fmt.Errorf("ошибка: %v", err)
+	}
+	n.state.Banks.AdminCreditList = make([]*model.Credit, 0, len(credits))
+	for _, credit := range credits {
+		if credit.Status == "pending" {
+			n.state.Banks.AdminCreditList = append(n.state.Banks.AdminCreditList, credit)
+		}
+	}
 	return nil
 }
 
 func (n *NavigationManager) openTransactionPage() {
 	n.navigateTo(ScreenTransaction)
+}
+
+func (n *NavigationManager) openCreditPage() {
+	n.navigateTo(ScreenCredit)
 }
 
 func (n *NavigationManager) openBankPage(index int) {

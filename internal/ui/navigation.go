@@ -19,6 +19,7 @@ const (
 	ScreenTransaction
 	ScreenAdminMain
 	ScreenRegistrate
+	ScreenCredit
 )
 
 type NavigationManager struct {
@@ -80,7 +81,7 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			return
 		}
 		n.state.Banks.WorkingAccount = userAccount
-		n.window.SetContent(screens.MakeBankScreen(n.openTransactionPage, n.state.Banks, user))
+		n.window.SetContent(screens.MakeBankScreen(n.openCreditPage, n.openTransactionPage, n.state.Banks, user))
 
 	case ScreenTransaction:
 		user := n.state.User.GetCurrentUser()
@@ -95,12 +96,26 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
 			return
 		}
-		n.window.SetContent(screens.MakeAdminMain(n.state.Banks.AdminTransactionsList, n.state.Banks.FindBankNameById, n.adminConfirmationTransaction, n.adminDeclineTransaction))
+		n.window.SetContent(screens.MakeAdminMain(n.state.Banks.AdminCreditList,
+			n.state.Banks.AdminTransactionsList,
+			n.state.Banks.FindBankNameById,
+			n.adminConfirmationTransaction,
+			n.adminDeclineTransaction,
+			n.adminConfirmationCredit,
+			n.adminDeclineCredit))
 	case ScreenRegistrate:
 		if err := n.initializeBankPageData(); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
 			return
 		}
 		n.window.SetContent(screens.MakeRegistratePage(n.onRegistrateClick, n.state.Banks))
+	case ScreenCredit:
+		user := n.state.User.GetCurrentUser()
+		n.state.Credit = state.NewCreditState(
+			n.state.Banks.BanksList, user,
+			n.state.Banks.WorkingAccount,
+			n.state.Banks.GetCurrentBank(),
+		)
+		n.window.SetContent(screens.MakeCreditScreen(n.createCredit, n.onCreateCreditError, n.state.Credit))
 	}
 }

@@ -9,6 +9,7 @@ type BanksState struct {
 	IsInitialized         bool
 	BanksList             [3]*model.Bank
 	AdminTransactionsList []*model.Transaction
+	AdminCreditList       []*model.Credit
 }
 
 func NewBanksState() *BanksState {

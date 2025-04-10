@@ -7,6 +7,17 @@ import (
 	"fmt"
 )
 
+const credQuery = `
+INSERT INTO system_credit(
+		amount,
+		term,
+		currency,
+		status,
+		source_account_id,
+		source_bank_id,
+		initiated_by_user_id
+	)VALUES (?,?,?,?,?,?,?)
+ 	`
 const tranQuery = `
 	INSERT INTO system_transaction(
 		amount,
@@ -31,6 +42,7 @@ type BankStorage interface {
 	FindUserAccount(user_id int, bankId int) (*model.UserAccount, error)
 	FindUserAccountByNumber(bankId int, number string) (*model.UserAccount, error)
 	CreateTransaction(tx *model.Transaction) error
+	CreateCredit(cr *model.Credit) error
 	FindUserAccountByAccountId(bankId int, accountId int) (*model.UserAccount, error)
 }
 
@@ -166,6 +178,20 @@ func (s *sqlBankStorage) CreateTransaction(tx *model.Transaction) error {
 	}
 	return nil
 
+}
+
+func (s *sqlBankStorage) CreateCredit(cr *model.Credit) error {
+	_, err := s.db.Exec(credQuery, cr.Amount, cr.Term, cr.Сurrency, cr.Status, cr.SourceAccountId, cr.SourceBankId, cr.InitiatedByUserId)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(`UPDATE user_account SET hold_balance = hold_balance + ? WHERE id =?`, cr.Amount, cr.SourceAccountId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *sqlBankStorage) FindUserAccountByAccountId(bankId int, accountId int) (*model.UserAccount, error) {

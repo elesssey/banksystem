@@ -127,8 +127,6 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 		)
 		n.window.SetContent(screens.MakeCreditScreen(n.createCredit, n.onCreateCreditError, n.state.Credit))
 	case ScreenWatchLogs:
-		n.state.User.UserTransactionList = nil
-		n.state.User.UserCreditList = nil
 		user := n.state.User.GetCurrentUser()
 		if err := n.initializeUserPageData(n.state.Banks.GetCurrentBank().ID, user.ID); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })

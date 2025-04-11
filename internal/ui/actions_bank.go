@@ -53,7 +53,7 @@ func (n *NavigationManager) initializeUserPageData(bankId int, userId int) error
 	if err != nil {
 		return fmt.Errorf("ошибка: %v", err)
 	}
-	n.state.Banks.AdminTransactionsList = make([]*model.Transaction, 0, len(transactions))
+	n.state.User.UserTransactionList = make([]*model.Transaction, 0, len(transactions))
 	for _, tratransaction := range transactions {
 		if tratransaction.InitiatedByUserId == userId {
 			n.state.User.UserTransactionList = append(n.state.User.UserTransactionList, tratransaction)
@@ -64,7 +64,7 @@ func (n *NavigationManager) initializeUserPageData(bankId int, userId int) error
 	if err != nil {
 		return fmt.Errorf("ошибка: %v", err)
 	}
-	n.state.Banks.AdminCreditList = make([]*model.Credit, 0, len(credits))
+	n.state.User.UserCreditList = make([]*model.Credit, 0, len(credits))
 	for _, credit := range credits {
 		if credit.InitiatedByUserId == userId {
 			n.state.User.UserCreditList = append(n.state.User.UserCreditList, credit)

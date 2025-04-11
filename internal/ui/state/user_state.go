@@ -5,7 +5,9 @@ import (
 )
 
 type UserState struct {
-	currentUser *model.User
+	currentUser         *model.User
+	UserCreditList      []*model.Credit
+	UserTransactionList []*model.Transaction
 }
 
 func NewUserState() *UserState {

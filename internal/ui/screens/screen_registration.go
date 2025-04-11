@@ -10,11 +10,12 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeRegistratePage(onRegistrateTry func(*model.User, int), banksState *state.BanksState) fyne.CanvasObject {
+func MakeRegistratePage(onRegistrateTry func(*model.User, int), banksState *state.BanksState, backToLogin func()) fyne.CanvasObject {
 	heading := widget.NewLabelWithStyle("РЕГИСТРАЦИЯ", fyne.TextAlignCenter, fyne.TextStyle{})
 	label := widget.NewLabelWithStyle("Заполните все поля для создания нового аккаунта", fyne.TextAlignLeading, fyne.TextStyle{})
 	label2 := widget.NewLabelWithStyle("Выберите банк для создания начального счета:", fyne.TextAlignLeading, fyne.TextStyle{})
 
+	buttonBack := widget.NewButton("ВЕРНУТЬСЯ НАЗАД", func() { backToLogin() })
 	nameLabel := widget.NewLabelWithStyle("Имя:                        ", fyne.TextAlignCenter, fyne.TextStyle{})
 	nameEntry := widget.NewEntry()
 	surnameLabel := widget.NewLabelWithStyle("Фамилия:              ", fyne.TextAlignCenter, fyne.TextStyle{})
@@ -68,7 +69,7 @@ func MakeRegistratePage(onRegistrateTry func(*model.User, int), banksState *stat
 		container.New(layout.NewFormLayout(), emailLabel, emailEntry),
 	))
 	mainContainer := container.NewVBox(
-		heading,
+		container.NewHBox(heading, layout.NewSpacer(), buttonBack),
 		label,
 		form,
 		label2,

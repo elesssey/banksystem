@@ -32,6 +32,7 @@ func MakeTransactionScreen(createTransaction func() error, onError func(error), 
 	accountEntry := widget.NewEntry()
 	amountEntry := widget.NewEntry()
 
+	backButton := widget.NewButton("ВЕРНУТЬСЯ НАЗАД", func() { onError(errors.New("вы превали транзакцию!")) })
 	button := widget.NewButton("ПЕРЕВЕСТИ ДЕНЬГИ", func() {
 		if txState.ReceiverBank == nil {
 			onError(errors.New("вы не выбрали банк получателя"))
@@ -66,7 +67,10 @@ func MakeTransactionScreen(createTransaction func() error, onError func(error), 
 
 	form := container.NewGridWithColumns(2, border1, border2)
 
-	mainContainer := container.NewGridWithRows(4, layout.NewSpacer(), heading, form, button)
+	mainContainer := container.NewGridWithRows(4,
+		container.NewHBox(layout.NewSpacer(), backButton),
+		heading,
+		form, button)
 
 	return mainContainer
 }

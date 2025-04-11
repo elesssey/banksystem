@@ -20,6 +20,7 @@ const (
 	ScreenAdminMain
 	ScreenRegistrate
 	ScreenCredit
+	ScreenWatchLogs
 )
 
 type NavigationManager struct {
@@ -29,7 +30,8 @@ type NavigationManager struct {
 	authService    service.AuthService
 	bankingService service.BankingService
 
-	currentScreen ScreenID
+	currentScreen  ScreenID
+	previousScreen ScreenID
 }
 
 func NewNavigationManager(
@@ -46,6 +48,7 @@ func NewNavigationManager(
 		authService:    authService,
 		bankingService: bankingServicce,
 		currentScreen:  ScreenNone,
+		previousScreen: ScreenNone,
 	}
 }
 
@@ -54,6 +57,11 @@ func (n *NavigationManager) Start() {
 }
 
 func (n *NavigationManager) navigateTo(screenID ScreenID) {
+	if n.currentScreen == ScreenNone {
+		n.previousScreen = ScreenNone
+	} else {
+		n.previousScreen = n.currentScreen
+	}
 	if n.currentScreen == screenID {
 		return
 	}
@@ -81,7 +89,7 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			return
 		}
 		n.state.Banks.WorkingAccount = userAccount
-		n.window.SetContent(screens.MakeBankScreen(n.openCreditPage, n.openTransactionPage, n.state.Banks, user))
+		n.window.SetContent(screens.MakeBankScreen(n.openLogsPage, n.openCreditPage, n.openTransactionPage, n.state.Banks, user))
 
 	case ScreenTransaction:
 		user := n.state.User.GetCurrentUser()
@@ -102,13 +110,14 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			n.adminConfirmationTransaction,
 			n.adminDeclineTransaction,
 			n.adminConfirmationCredit,
-			n.adminDeclineCredit))
+			n.adminDeclineCredit,
+			n.backToPreviousPage))
 	case ScreenRegistrate:
 		if err := n.initializeBankPageData(); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
 			return
 		}
-		n.window.SetContent(screens.MakeRegistratePage(n.onRegistrateClick, n.state.Banks))
+		n.window.SetContent(screens.MakeRegistratePage(n.onRegistrateClick, n.state.Banks, n.backToPreviousPage))
 	case ScreenCredit:
 		user := n.state.User.GetCurrentUser()
 		n.state.Credit = state.NewCreditState(
@@ -117,5 +126,14 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			n.state.Banks.GetCurrentBank(),
 		)
 		n.window.SetContent(screens.MakeCreditScreen(n.createCredit, n.onCreateCreditError, n.state.Credit))
+	case ScreenWatchLogs:
+		n.state.User.UserTransactionList = nil
+		n.state.User.UserCreditList = nil
+		user := n.state.User.GetCurrentUser()
+		if err := n.initializeUserPageData(n.state.Banks.GetCurrentBank().ID, user.ID); err != nil {
+			n.showError(err.Error(), func() { n.navigateTo(ScreenLogin) })
+			return
+		}
+		n.window.SetContent(screens.MakeUserPageData(n.state.User.UserTransactionList, n.state.User.UserCreditList, n.state.Banks.FindBankNameById, n.backToPreviousPage))
 	}
 }

@@ -11,23 +11,24 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeAdminMain(credits []*model.Credit, transactions []*model.Transaction, findById func(int) string, trConfirm func(*model.Transaction) error, trDecline func(*model.Transaction) error, crConfirm func(*model.Credit) error, crDecline func(*model.Credit) error) fyne.CanvasObject {
+func MakeAdminMain(credits []*model.Credit, transactions []*model.Transaction, findById func(int) string, trConfirm func(*model.Transaction) error, trDecline func(*model.Transaction) error, crConfirm func(*model.Credit) error, crDecline func(*model.Credit) error, backToMainPage func()) fyne.CanvasObject {
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions, findById, trConfirm, trDecline)),
+		container.NewTabItem("ПЕРЕВОДЫ", MakeTransactionTab(transactions, findById, trConfirm, trDecline, backToMainPage)),
 		container.NewTabItem("ЗАРПЛАТНЫЕ ПРОЕКТЫ", MakeSalaryTab()),
-		container.NewTabItem("КРЕДИТЫ", MakeCreditTab(credits, findById, crConfirm, crDecline)),
+		container.NewTabItem("КРЕДИТЫ", MakeCreditTab(credits, findById, crConfirm, crDecline, backToMainPage)),
 		container.NewTabItem("РАССРОЧКИ", MakeInstallmentTab()),
 	)
+
 	return tabs
 }
 
-func MakeTransactionTab(transactions []*model.Transaction, findById func(int) string, trConfirm func(*model.Transaction) error, trDecline func(*model.Transaction) error) fyne.CanvasObject {
+func MakeTransactionTab(transactions []*model.Transaction, findById func(int) string, trConfirm func(*model.Transaction) error, trDecline func(*model.Transaction) error, backToMainPage func()) fyne.CanvasObject {
 
 	table := widget.NewTable(
 		// Размер таблицы
 		func() (int, int) {
-			return 11, 7
+			return 11, 8
 		},
 		// Шаблон ячейки
 		func() fyne.CanvasObject {
@@ -52,7 +53,9 @@ func MakeTransactionTab(transactions []*model.Transaction, findById func(int) st
 					myContainer.Add(widget.NewLabel("БАНК"))
 				case 5:
 					myContainer.Add(widget.NewLabel("ПОДТВЕРЖДЕНИЕ"))
+				case 6:
 
+					myContainer.Add(widget.NewButton("ВЕРНУТЬСЯ НАЗАД", backToMainPage))
 				}
 
 			} else {
@@ -94,6 +97,7 @@ func MakeTransactionTab(transactions []*model.Transaction, findById func(int) st
 	table.SetColumnWidth(3, 250)
 	table.SetColumnWidth(4, 170)
 	table.SetColumnWidth(5, 300)
+	table.SetColumnWidth(6, 200)
 	return table
 }
 
@@ -147,12 +151,12 @@ func MakeSalaryTab() fyne.CanvasObject {
 	return table
 }
 
-func MakeCreditTab(credits []*model.Credit, findById func(int) string, crConfirm func(*model.Credit) error, crDecline func(*model.Credit) error) fyne.CanvasObject {
+func MakeCreditTab(credits []*model.Credit, findById func(int) string, crConfirm func(*model.Credit) error, crDecline func(*model.Credit) error, backToMainPage func()) fyne.CanvasObject {
 
 	table := widget.NewTable(
 		// Размер таблицы
 		func() (int, int) {
-			return 11, 7
+			return 11, 8
 		},
 		// Шаблон ячейки
 		func() fyne.CanvasObject {
@@ -177,7 +181,8 @@ func MakeCreditTab(credits []*model.Credit, findById func(int) string, crConfirm
 					myContainer.Add(widget.NewLabel("БАНК"))
 				case 5:
 					myContainer.Add(widget.NewLabel("ПОДТВЕРЖДЕНИЕ"))
-
+				case 6:
+					myContainer.Add(widget.NewButton("ВЕРНУТЬСЯ НАЗАД", backToMainPage))
 				}
 
 			} else {
@@ -219,6 +224,7 @@ func MakeCreditTab(credits []*model.Credit, findById func(int) string, crConfirm
 	table.SetColumnWidth(3, 100)
 	table.SetColumnWidth(4, 200)
 	table.SetColumnWidth(5, 300)
+	table.SetColumnWidth(6, 200)
 
 	//mainButtons := container.NewGridWithRows(11, MakeButtons(len(transactions), agreeButton, disagreeButton)...)
 

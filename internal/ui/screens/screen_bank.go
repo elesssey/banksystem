@@ -13,7 +13,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeBankScreen(onCreditClick func(), onTransactionClick func(), banksState *state.BanksState, user *model.User) fyne.CanvasObject {
+func MakeBankScreen(onInformationClick func(), onCreditClick func(), onTransactionClick func(), banksState *state.BanksState, user *model.User) fyne.CanvasObject {
 	heading := widget.NewLabelWithStyle(banksState.GetCurrentBank().Name, fyne.TextAlignLeading, fyne.TextStyle{})
 
 	existingAccountsLabel := canvas.NewText("Существующие счета:", color.Black)
@@ -27,7 +27,7 @@ func MakeBankScreen(onCreditClick func(), onTransactionClick func(), banksState 
 	savingLabel := widget.NewLabelWithStyle("Накопительный счет", fyne.TextAlignCenter, fyne.TextStyle{})
 	creditLabel := widget.NewLabelWithStyle("Кредиторный счет", fyne.TextAlignCenter, fyne.TextStyle{})
 
-	infButton := widget.NewButton("Посмотреть информацию", func() {})
+	infButton := widget.NewButton("Посмотреть информацию", func() { onInformationClick() })
 	infButton.Resize(fyne.NewSize(200, 50))
 	transferButton := widget.NewButton("СДЕЛАТЬ ПЕРЕВОД", func() { onTransactionClick() })
 	openButton := widget.NewButton("ОТКРЫТЬ СЧЕТ", func() { onCreditClick() })

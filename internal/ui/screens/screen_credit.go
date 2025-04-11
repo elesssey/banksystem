@@ -28,6 +28,9 @@ func MakeCreditScreen(createTransaction func() error, onError func(error), crSta
 	termLabel := widget.NewLabelWithStyle("Выберите срок(мес) для кредита -->", fyne.TextAlignLeading, fyne.TextStyle{})
 	amountLabel := widget.NewLabelWithStyle("Введите сумму кредита -->", fyne.TextAlignLeading, fyne.TextStyle{})
 
+	backButton := widget.NewButton("ВЕРНУТЬСЯ НАЗАД", func() {
+		onError(errors.New("вы прервали взятие кредита!"))
+	})
 	//accountEntry := widget.NewEntry()
 	amountEntry := widget.NewEntry()
 
@@ -63,7 +66,12 @@ func MakeCreditScreen(createTransaction func() error, onError func(error), crSta
 
 	form := container.NewGridWithColumns(2, border1, border2)
 
-	mainContainer := container.NewGridWithRows(4, layout.NewSpacer(), heading, form, button)
+	mainContainer := container.NewGridWithRows(4,
+		container.NewHBox(layout.NewSpacer(), backButton),
+		heading,
+		form,
+		button,
+	)
 
 	return mainContainer
 }

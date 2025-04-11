@@ -10,6 +10,10 @@ func (n *NavigationManager) RegistrationStart() {
 	n.navigateTo(ScreenRegistrate)
 }
 
+func (n *NavigationManager) backToPreviousPage() {
+	n.navigateTo(n.previousScreen)
+}
+
 func (n *NavigationManager) onRegistrateClick(user *model.User, bankId int) {
 	if len(user.Password) < 6 {
 		n.showError("Введите пароль хотя бы из шести символов", func() { n.navigateTo(ScreenRegistrate) })

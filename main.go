@@ -22,7 +22,6 @@ func main() {
 	}
 	defer logFile.Close()
 
-	// Перенаправляем вывод логов в файл
 	log.SetOutput(logFile)
 
 	db, err := sql.Open("sqlite3", "./banking.db")
@@ -54,6 +53,8 @@ func main() {
 		bankingService,
 	)
 	navigationManager.Start()
+
+	window.SetFullScreen(true)
 
 	window.ShowAndRun()
 }

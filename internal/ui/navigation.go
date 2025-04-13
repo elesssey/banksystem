@@ -85,11 +85,17 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 		user := n.state.User.GetCurrentUser()
 		userAccount, err := n.bankingService.GetUserAccount(user.ID, n.state.Banks.GetCurrentBank().ID)
 		if err != nil {
-			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
+			n.showError("вы успешно зарегистрировали новый аккаунт в "+n.state.Banks.GetCurrentBank().Name, func() {
+				userAccount, err = n.createNewUserAccount(n.state.Banks.GetCurrentBank().ID, n.state.User.GetCurrentUser().ID)
+				if err != nil {
+					n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
+				}
+				n.navigateTo(ScreenBankSelector)
+			})
 			return
 		}
 		n.state.Banks.WorkingAccount = userAccount
-		n.window.SetContent(screens.MakeBankScreen(n.openLogsPage, n.openCreditPage, n.openTransactionPage, n.state.Banks, user))
+		n.window.SetContent(screens.MakeBankScreen(n.openLogsPage, n.openCreditPage, n.openTransactionPage, n.state.Banks, user, n.backToBankSelector))
 
 	case ScreenTransaction:
 		user := n.state.User.GetCurrentUser()

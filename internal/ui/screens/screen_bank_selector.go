@@ -59,7 +59,9 @@ func MakeBankCard(onBankClick func(int), bank *model.Bank, index int) fyne.Canva
 
 	enterprises := container.NewGridWithColumns(1, createEnterpricesConvasList(bank.Enterprises)...)
 
-	button := widget.NewButton("Select", func() { onBankClick(index) })
+	button := widget.NewButton("Select", func() {
+		onBankClick(index)
+	})
 	button.Importance = widget.HighImportance
 	buttonContainer := container.New(layout.NewCustomPaddedLayout(0, 5, 5, 5), button)
 

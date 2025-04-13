@@ -32,7 +32,7 @@ func MakeTransactionScreen(createTransaction func() error, onError func(error), 
 	accountEntry := widget.NewEntry()
 	amountEntry := widget.NewEntry()
 
-	backButton := widget.NewButton("ВЕРНУТЬСЯ НАЗАД", func() { onError(errors.New("вы превали транзакцию!")) })
+	backButton := widget.NewButton("ВЕРНУТЬСЯ НАЗАД", func() { onError(errors.New("вы прервали транзакцию")) })
 	button := widget.NewButton("ПЕРЕВЕСТИ ДЕНЬГИ", func() {
 		if txState.ReceiverBank == nil {
 			onError(errors.New("вы не выбрали банк получателя"))

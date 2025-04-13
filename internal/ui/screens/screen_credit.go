@@ -29,7 +29,7 @@ func MakeCreditScreen(createTransaction func() error, onError func(error), crSta
 	amountLabel := widget.NewLabelWithStyle("Введите сумму кредита -->", fyne.TextAlignLeading, fyne.TextStyle{})
 
 	backButton := widget.NewButton("ВЕРНУТЬСЯ НАЗАД", func() {
-		onError(errors.New("вы прервали взятие кредита!"))
+		onError(errors.New("вы прервали взятие кредита"))
 	})
 	//accountEntry := widget.NewEntry()
 	amountEntry := widget.NewEntry()

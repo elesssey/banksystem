@@ -18,11 +18,9 @@ func MakeLoginScreen(onLoginTry func(string, string), onRegistrationStartClick f
 
 	emailLabel := widget.NewLabelWithStyle("EMAIL:         ", fyne.TextAlignTrailing, fyne.TextStyle{})
 	emailEntry := widget.NewEntry()
-	emailEntry.SetText("admin@banksystem.by")
 
 	passwordLabel := widget.NewLabelWithStyle("PASSWORD:", fyne.TextAlignTrailing, fyne.TextStyle{})
 	passwordEntry := widget.NewPasswordEntry()
-	passwordEntry.SetText("SuperAdmin7!")
 
 	signInButton := widget.NewButton("SIGN IN", func() { onLoginTry(emailEntry.Text, passwordEntry.Text) })
 	signInButton.Importance = widget.HighImportance

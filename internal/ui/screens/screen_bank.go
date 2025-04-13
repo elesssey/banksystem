@@ -13,7 +13,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeBankScreen(onInformationClick func(), onCreditClick func(), onTransactionClick func(), banksState *state.BanksState, user *model.User) fyne.CanvasObject {
+func MakeBankScreen(onInformationClick func(), onCreditClick func(), onTransactionClick func(), banksState *state.BanksState, user *model.User, backToBankSelector func()) fyne.CanvasObject {
 	heading := widget.NewLabelWithStyle(banksState.GetCurrentBank().Name, fyne.TextAlignLeading, fyne.TextStyle{})
 
 	existingAccountsLabel := canvas.NewText("Существующие счета:", color.Black)
@@ -31,6 +31,7 @@ func MakeBankScreen(onInformationClick func(), onCreditClick func(), onTransacti
 	infButton.Resize(fyne.NewSize(200, 50))
 	transferButton := widget.NewButton("СДЕЛАТЬ ПЕРЕВОД", func() { onTransactionClick() })
 	openButton := widget.NewButton("ОТКРЫТЬ СЧЕТ", func() { onCreditClick() })
+	backButton := widget.NewButton("ВЕРНУТЬСЯ НАЗАД", func() { backToBankSelector() })
 
 	imgUser := canvas.NewImageFromFile("./internal/images/userLogo.png")
 	imgUser.SetMinSize(fyne.NewSize(50, 50))
@@ -73,7 +74,7 @@ func MakeBankScreen(onInformationClick func(), onCreditClick func(), onTransacti
 	accounts := container.NewGridWithColumns(3, debitAccount, savingAccount, creditAccount)
 
 	mainContainer := container.NewVBox(
-		heading,
+		container.NewHBox(heading, layout.NewSpacer(), backButton),
 		layout.NewSpacer(),
 		container.NewGridWithColumns(3, layout.NewSpacer(), layout.NewSpacer(), form),
 		layout.NewSpacer(),

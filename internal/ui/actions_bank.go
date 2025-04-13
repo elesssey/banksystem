@@ -77,9 +77,14 @@ func (n *NavigationManager) openTransactionPage() {
 	n.navigateTo(ScreenTransaction)
 }
 
+func (n *NavigationManager) backToBankSelector() {
+	n.navigateTo(ScreenBankSelector)
+}
+
 func (n *NavigationManager) openCreditPage() {
 	n.navigateTo(ScreenCredit)
 }
+
 func (n *NavigationManager) openLogsPage() {
 	n.navigateTo(ScreenWatchLogs)
 }
@@ -92,4 +97,12 @@ func (n *NavigationManager) openBankPage(index int) {
 func (n *NavigationManager) openAdminMain(index int) {
 	n.state.Banks.SelectedBankIndex = index
 	n.navigateTo(ScreenAdminMain)
+}
+
+func (n *NavigationManager) createNewUserAccount(bankID int, userId int) (*model.UserAccount, error) {
+	newAccount, err := n.authService.CreateAccount(bankID, userId)
+	if err != nil {
+		return nil, err
+	}
+	return newAccount, nil
 }

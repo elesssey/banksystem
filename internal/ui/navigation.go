@@ -95,16 +95,20 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 			return
 		}
 		n.state.Banks.WorkingAccount = userAccount
-		n.window.SetContent(screens.MakeBankScreen(n.openLogsPage, n.openCreditPage, n.openTransactionPage, n.state.Banks, user, n.backToBankSelector))
+		n.window.SetContent(screens.MakeBankScreen(n.onFreezingAccountError, n.unFreezeAccount, n.freezeAccount, n.openLogsPage, n.openCreditPage, n.openTransactionPage, n.state.Banks, user, n.backToBankSelector))
 
 	case ScreenTransaction:
-		user := n.state.User.GetCurrentUser()
-		n.state.Transaction = state.NewTransactionState(
-			n.state.Banks.BanksList, user,
-			n.state.Banks.WorkingAccount,
-			n.state.Banks.GetCurrentBank(),
-		)
-		n.window.SetContent(screens.MakeTransactionScreen(n.createTransaction, n.onCreateTransactionError, n.state.Transaction))
+		if n.state.Banks.WorkingAccount.Freeze {
+			n.showError("Извините, но ваш счет заморожен", func() { n.navigateTo(ScreenBank) })
+		} else {
+			user := n.state.User.GetCurrentUser()
+			n.state.Transaction = state.NewTransactionState(
+				n.state.Banks.BanksList, user,
+				n.state.Banks.WorkingAccount,
+				n.state.Banks.GetCurrentBank(),
+			)
+			n.window.SetContent(screens.MakeTransactionScreen(n.createTransaction, n.onCreateTransactionError, n.state.Transaction))
+		}
 	case ScreenAdminMain:
 		if err := n.initializeAdminPageData(n.state.Banks.GetCurrentBank().ID); err != nil {
 			n.showError(err.Error(), func() { n.navigateTo(ScreenBankSelector) })
@@ -125,13 +129,17 @@ func (n *NavigationManager) navigateTo(screenID ScreenID) {
 		}
 		n.window.SetContent(screens.MakeRegistratePage(n.onRegistrateClick, n.state.Banks, n.backToPreviousPage))
 	case ScreenCredit:
-		user := n.state.User.GetCurrentUser()
-		n.state.Credit = state.NewCreditState(
-			n.state.Banks.BanksList, user,
-			n.state.Banks.WorkingAccount,
-			n.state.Banks.GetCurrentBank(),
-		)
-		n.window.SetContent(screens.MakeCreditScreen(n.createCredit, n.onCreateCreditError, n.state.Credit))
+		if n.state.Banks.WorkingAccount.Freeze {
+			n.showError("Извините, но ваш счет заморожен", func() { n.navigateTo(ScreenBank) })
+		} else {
+			user := n.state.User.GetCurrentUser()
+			n.state.Credit = state.NewCreditState(
+				n.state.Banks.BanksList, user,
+				n.state.Banks.WorkingAccount,
+				n.state.Banks.GetCurrentBank(),
+			)
+			n.window.SetContent(screens.MakeCreditScreen(n.createCredit, n.onCreateCreditError, n.state.Credit))
+		}
 	case ScreenWatchLogs:
 		user := n.state.User.GetCurrentUser()
 		if err := n.initializeUserPageData(n.state.Banks.GetCurrentBank().ID, user.ID); err != nil {

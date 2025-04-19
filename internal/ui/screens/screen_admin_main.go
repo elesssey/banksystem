@@ -144,10 +144,6 @@ func MakeSalaryTab() fyne.CanvasObject {
 	table.SetColumnWidth(3, 200)
 	table.SetColumnWidth(4, 170)
 
-	// mainContainer := container.NewHBox(
-	// 	table,
-	// 	layout.NewSpacer(),
-	// )
 	return table
 }
 

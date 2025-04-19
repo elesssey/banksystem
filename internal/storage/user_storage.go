@@ -25,7 +25,7 @@ type sqlUserStorage struct {
 	db *sql.DB
 }
 
-func NewSQLUserStorage(db *sql.DB) UserStorage {
+func NewSQLUserStorage(db *sql.DB) *sqlUserStorage {
 	return &sqlUserStorage{
 		db: db,
 	}

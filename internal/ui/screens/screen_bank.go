@@ -13,10 +13,11 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func MakeBankScreen(onInformationClick func(), onCreditClick func(), onTransactionClick func(), banksState *state.BanksState, user *model.User, backToBankSelector func()) fyne.CanvasObject {
+func MakeBankScreen(onError func(error), onUnFreezeClick func() error, onFreezeClick func() error, onInformationClick func(), onCreditClick func(), onTransactionClick func(), banksState *state.BanksState, user *model.User, backToBankSelector func()) fyne.CanvasObject {
 	heading := widget.NewLabelWithStyle(banksState.GetCurrentBank().Name, fyne.TextAlignLeading, fyne.TextStyle{})
 
 	existingAccountsLabel := canvas.NewText("Существующие счета:", color.Black)
+	freezeAccountLabel := canvas.NewText("Вы можете заморозить свой счет:", color.Black)
 	transferInstructionLabel := canvas.NewText("Вы можете перести деньги другому пользователю используя дебетовый счет", color.RGBA{255, 0, 0, 255})
 	debitAccountLabel := widget.NewLabelWithStyle("Дебетовый счет", fyne.TextAlignCenter, fyne.TextStyle{})
 	accountNumberLabel := canvas.NewText("Номер счета:", color.Black)
@@ -30,6 +31,25 @@ func MakeBankScreen(onInformationClick func(), onCreditClick func(), onTransacti
 	infButton := widget.NewButton("Посмотреть информацию", func() { onInformationClick() })
 	infButton.Resize(fyne.NewSize(200, 50))
 	transferButton := widget.NewButton("СДЕЛАТЬ ПЕРЕВОД", func() { onTransactionClick() })
+
+	freezeButton := widget.NewButton("ЗАМОРОЗИТЬ СЧЕТ", func() {})
+	switch banksState.WorkingAccount.Freeze {
+	case false:
+		freezeButton = widget.NewButton("ЗАМОРОЗИТЬ СЧЕТ", func() {
+			err := onFreezeClick()
+			if err != nil {
+				onError(err)
+			}
+		})
+	case true:
+		freezeButton = widget.NewButton("РАЗМОРОЗИТЬ СЧЕТ", func() {
+			err := onUnFreezeClick()
+			if err != nil {
+				onError(err)
+			}
+		})
+	}
+
 	openButton := widget.NewButton("ОТКРЫТЬ СЧЕТ", func() { onCreditClick() })
 	backButton := widget.NewButton("ВЕРНУТЬСЯ НАЗАД", func() { backToBankSelector() })
 
@@ -81,6 +101,10 @@ func MakeBankScreen(onInformationClick func(), onCreditClick func(), onTransacti
 		existingAccountsLabel,
 		layout.NewSpacer(),
 		accounts,
+		layout.NewSpacer(),
+		freezeAccountLabel,
+		layout.NewSpacer(),
+		container.NewHBox(freezeButton, layout.NewSpacer()),
 		layout.NewSpacer(),
 		transferInstructionLabel,
 		layout.NewSpacer(),

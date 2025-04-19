@@ -54,7 +54,5 @@ func main() {
 	)
 	navigationManager.Start()
 
-	window.SetFullScreen(true)
-
 	window.ShowAndRun()
 }

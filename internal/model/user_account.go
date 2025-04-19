@@ -8,4 +8,5 @@ type UserAccount struct {
 	UserId      int
 	BankId      int
 	HoldBalance float64
+	Freeze      bool
 }

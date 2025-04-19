@@ -19,7 +19,7 @@ type authService struct {
 	userStorage storage.UserStorage
 }
 
-func NewAuthService(userStorage storage.UserStorage) AuthService {
+func NewAuthService(userStorage storage.UserStorage) *authService {
 	return &authService{
 		userStorage: userStorage,
 	}

@@ -18,6 +18,8 @@ type BankingService interface {
 	TransactionDeclination(id int) error
 	CreditConfirmation(id int) error
 	CreditDeclination(id int) error
+	FreezeAccount(id int) error
+	UnFreezeAccount(id int) error
 }
 
 type bankingService struct {
@@ -166,5 +168,21 @@ func (s *bankingService) CreateCredit(cr *model.Credit) error {
 		return err
 	}
 
+	return nil
+}
+
+func (s *bankingService) FreezeAccount(id int) error {
+	err := s.bankStorage.FreezeAccount(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *bankingService) UnFreezeAccount(id int) error {
+	err := s.bankStorage.UnFreezeAccount(id)
+	if err != nil {
+		return err
+	}
 	return nil
 }

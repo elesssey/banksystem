@@ -43,6 +43,8 @@ type BankStorage interface {
 	FindUserAccountByNumber(bankId int, number string) (*model.UserAccount, error)
 	CreateTransaction(tx *model.Transaction) error
 	CreateCredit(cr *model.Credit) error
+	FreezeAccount(id int) error
+	UnFreezeAccount(id int) error
 	FindUserAccountByAccountId(bankId int, accountId int) (*model.UserAccount, error)
 }
 
@@ -105,7 +107,7 @@ func (s *sqlBankStorage) Fetch(limit int) ([]*model.Bank, error) {
 }
 
 func (s *sqlBankStorage) FindUserAccount(userId int, bankId int) (*model.UserAccount, error) {
-	query := `SELECT id, number, balance, currency, user_id, bank_id, hold_balance FROM user_account WHERE user_id = ? AND bank_id = ?`
+	query := `SELECT id, number, balance, currency, user_id, bank_id, hold_balance,freezing FROM user_account WHERE user_id = ? AND bank_id = ?`
 	row := s.db.QueryRow(query, userId, bankId)
 	userAccount := &model.UserAccount{}
 	err := row.Scan(
@@ -116,6 +118,7 @@ func (s *sqlBankStorage) FindUserAccount(userId int, bankId int) (*model.UserAcc
 		&userAccount.UserId,
 		&userAccount.BankId,
 		&userAccount.HoldBalance,
+		&userAccount.Freeze,
 	)
 
 	if err == sql.ErrNoRows {
@@ -215,4 +218,19 @@ func (s *sqlBankStorage) FindUserAccountByAccountId(bankId int, accountId int) (
 	}
 
 	return userAccount, nil
+}
+func (s *sqlBankStorage) FreezeAccount(id int) error {
+	_, err := s.db.Exec(`UPDATE user_account SET freezing = ? WHERE id = ?`, 1, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *sqlBankStorage) UnFreezeAccount(id int) error {
+	_, err := s.db.Exec(`UPDATE user_account SET freezing = ? WHERE id = ?`, 0, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -13,11 +13,34 @@ func (n *NavigationManager) createTransaction() error {
 	n.navigateTo(ScreenBank)
 	return nil
 }
+func (n *NavigationManager) freezeAccount() error {
+	err := n.bankingService.FreezeAccount(n.state.Banks.WorkingAccount.ID)
+	if err != nil {
+		return fmt.Errorf("ошибка: %v", err)
+	}
+	n.navigateTo(ScreenBankSelector)
+	return nil
+}
+
+func (n *NavigationManager) unFreezeAccount() error {
+	err := n.bankingService.UnFreezeAccount(n.state.Banks.WorkingAccount.ID)
+	if err != nil {
+		return fmt.Errorf("ошибка: %v", err)
+	}
+	n.navigateTo(ScreenBankSelector)
+	return nil
+}
 
 func (n *NavigationManager) onCreateTransactionError(err error) {
 	n.showError(err.Error(), func() {
 		n.state.Transaction = nil
 		n.navigateTo(ScreenBank)
+	})
+}
+
+func (n *NavigationManager) onFreezingAccountError(err error) {
+	n.showError(err.Error(), func() {
+		n.navigateTo(ScreenBankSelector)
 	})
 }
 

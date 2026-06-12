@@ -10,9 +10,12 @@ import (
 type BankingService interface {
 	GetBanks() ([]*model.Bank, error)
 	GetUserAccount(userId int, bankId int) (*model.UserAccount, error)
+	GetUserById(userId int) (*model.User, error)
 	CreateTransaction(tx *model.Transaction) error
+	CreationTransaction(transaction *model.Transaction) error
 	CreateCredit(cr *model.Credit) error
 	GetTransactions(bankId int) ([]*model.Transaction, error)
+	GetAllTransactions() ([]*model.Transaction, error)
 	GetCredits(bankid int) ([]*model.Credit, error)
 	TransactionConfirmation(id int) error
 	TransactionDeclination(id int) error
@@ -20,19 +23,28 @@ type BankingService interface {
 	CreditDeclination(id int) error
 	FreezeAccount(id int) error
 	UnFreezeAccount(id int) error
+	GetAnyUserAccount(userId int) (*model.UserAccount, error)
+	GetAccountByNumber(number string) (*model.UserAccount, error)
+	//ConfirmTransaction(amount int, number string) error
 }
 
 type bankingService struct {
 	bankStorage        storage.BankStorage
 	transactionStorage storage.TransactionStorage
 	creditStorage      storage.CreditStorage
+	userStorage        storage.UserStorage
+	pendingStorage     storage.PendingRegistrationStorage
+	pendingService     EmailService
 }
 
-func NewBankingService(bankStorage storage.BankStorage, transactionStorage storage.TransactionStorage, creditStorage storage.CreditStorage) BankingService {
+func NewBankingService(bankStorage storage.BankStorage, transactionStorage storage.TransactionStorage, creditStorage storage.CreditStorage, userStorage storage.UserStorage, pendingStorage storage.PendingRegistrationStorage, pendingService EmailService) BankingService {
 	return &bankingService{
 		bankStorage:        bankStorage,
 		transactionStorage: transactionStorage,
 		creditStorage:      creditStorage,
+		userStorage:        userStorage,
+		pendingStorage:     pendingStorage,
+		pendingService:     pendingService,
 	}
 }
 
@@ -42,6 +54,14 @@ func (s *bankingService) GetBanks() ([]*model.Bank, error) {
 
 func (s *bankingService) GetTransactions(bankId int) ([]*model.Transaction, error) {
 	return s.transactionStorage.FetchwithUsers(10, bankId)
+}
+
+func (s *bankingService) GetAllTransactions() ([]*model.Transaction, error) {
+	return s.transactionStorage.FetchAllTransaction()
+}
+
+func (s *bankingService) GetUserById(userId int) (*model.User, error) {
+	return s.userStorage.FindById(userId)
 }
 
 func (s *bankingService) GetCredits(bankId int) ([]*model.Credit, error) {
@@ -186,3 +206,24 @@ func (s *bankingService) UnFreezeAccount(id int) error {
 	}
 	return nil
 }
+
+func (s *bankingService) GetAnyUserAccount(userID int) (*model.UserAccount, error) {
+	return s.userStorage.FindAnyAccountByUserID(userID)
+}
+
+func (s *bankingService) GetAccountByNumber(number string) (*model.UserAccount, error) {
+	return s.userStorage.FindAccountByNumber(number)
+}
+
+func (s *bankingService) CreationTransaction(transaction *model.Transaction) error {
+	err := s.CreateTransaction(transaction)
+	if err != nil {
+		return err
+	}
+
+	err = s.pendingService.SendVerification("cchheltyyy81@gmail.com", transaction)
+
+	return nil
+}
+
+//func (s *bankingService) ConfirmTransaction(amount int, number string) error {}

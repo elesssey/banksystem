@@ -93,6 +93,23 @@ create table system_transaction (
     foreign key (initiated_by_user_id) references user(id)
 );
 
+CREATE TABLE pending_registration (
+    'id' INTEGER PRIMARY KEY AUTOINCREMENT,
+    'name' TEXT NOT NULL,
+    'middlename' TEXT,
+    'surname' TEXT NOT NULL,
+    'password_hash' TEXT NOT NULL,
+    'passport_series' TEXT NOT NULL,
+    'passport_number' TEXT NOT NULL,
+    'phone' TEXT NOT NULL,
+    'email' TEXT NOT NULL UNIQUE,
+    'bank_id' INTEGER NOT NULL,
+    'role' TEXT NOT NULL DEFAULT 'client',
+    'verification_code_hash' TEXT NOT NULL,
+    'expires_at' DATETIME NOT NULL,
+    'created_at' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 create table system_credit (
     'id' integer primary key autoincrement,
     'amount' integer not null,

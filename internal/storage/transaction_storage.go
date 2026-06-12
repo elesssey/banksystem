@@ -26,6 +26,7 @@ const fetchQuery = `
 
 type TransactionStorage interface {
 	Fetch(limit int, bankId int) ([]*model.Transaction, error)
+	FetchAllTransaction() ([]*model.Transaction, error)
 	FetchwithUsers(limit int, bankId int) ([]*model.Transaction, error)
 	FetchCurrentTransaction(id int) (*model.Transaction, error)
 	ConfirmTransaction(transaction *model.Transaction) error
@@ -256,4 +257,53 @@ func (s *sqlTransactionStorage) DeclineTransaction(transaction *model.Transactio
 		return err
 	}
 	return nil
+}
+
+func (s *sqlTransactionStorage) FetchAllTransaction() ([]*model.Transaction, error) {
+	rows, err := s.db.Query(`SELECT 
+		id,
+		amount,
+		currency,
+		description,
+		status,
+		source_account_id,
+		destination_account_id,
+		source_account_type,
+		destination_account_type,
+		type,
+		source_bank_id,
+		destination_bank_id,
+		initiated_by_user_id
+	FROM system_transaction`)
+	if err != nil {
+		return nil, fmt.Errorf("не получается достать транзакции rows: %w", err)
+	}
+	defer rows.Close()
+
+	var transactions []*model.Transaction
+	for rows.Next() {
+		transaction := &model.Transaction{}
+		if err := rows.Scan(
+			&transaction.Id,
+			&transaction.Amount,
+			&transaction.Сurrency,
+			&transaction.Description,
+			&transaction.Status,
+			&transaction.SourceAccountId,
+			&transaction.DestinationAccountId,
+			&transaction.SourceAccountType,
+			&transaction.DestinationAccountType,
+			&transaction.Type,
+			&transaction.SourceBankId,
+			&transaction.DestinationBankId,
+			&transaction.InitiatedByUserId,
+		); err != nil {
+			return nil, fmt.Errorf("не получается достать транзакции scan: %w", err)
+		}
+		transactions = append(transactions, transaction)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("не получается достать транзакции rows.Err(): %w", err)
+	}
+	return transactions, nil
 }

@@ -19,6 +19,8 @@ type UserStorage interface {
 	FindById(id int) (*model.User, error)
 	AddNewUserWithAccount(user *model.User, bankId int) error
 	AddNewAccountToUser(bankId, userId int) (*model.UserAccount, error)
+	FindAnyAccountByUserID(userId int) (*model.UserAccount, error)
+	FindAccountByNumber(number string) (*model.UserAccount, error)
 }
 
 type sqlUserStorage struct {
@@ -220,4 +222,56 @@ func (s *sqlUserStorage) AddNewAccountToUser(bankId int, userId int) (*model.Use
 	}
 
 	return userAccount, nil
+}
+
+func (s *sqlUserStorage) FindAnyAccountByUserID(userID int) (*model.UserAccount, error) {
+	row := s.db.QueryRow(`
+        SELECT id, number, balance, currency, user_id, bank_id, hold_balance, freezing
+        FROM user_account
+        WHERE user_id = ?
+        LIMIT 1
+    `, userID)
+
+	var acc model.UserAccount
+	err := row.Scan(
+		&acc.ID,
+		&acc.Number,
+		&acc.Balance,
+		&acc.Currency,
+		&acc.UserId,
+		&acc.BankId,
+		&acc.HoldBalance,
+		&acc.Freeze,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &acc, nil
+}
+
+func (s *sqlUserStorage) FindAccountByNumber(number string) (*model.UserAccount, error) {
+	row := s.db.QueryRow(`
+        SELECT id, number, balance, currency, user_id, bank_id, hold_balance, freezing
+        FROM user_account
+        WHERE number = ?
+        
+    `, number)
+
+	var acc model.UserAccount
+	err := row.Scan(
+		&acc.ID,
+		&acc.Number,
+		&acc.Balance,
+		&acc.Currency,
+		&acc.UserId,
+		&acc.BankId,
+		&acc.HoldBalance,
+		&acc.Freeze,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &acc, nil
 }

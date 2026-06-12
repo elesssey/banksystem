@@ -1,10 +1,15 @@
 module banksystem
 
-go 1.22.5
+go 1.23
+
+toolchain go1.24.0
 
 require (
 	fyne.io/fyne/v2 v2.5.5
+	github.com/go-chi/chi/v5 v5.3.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/mattn/go-sqlite3 v1.14.24
+	golang.org/x/crypto v0.23.0
 )
 
 require (
@@ -23,6 +28,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/jeandeaual/go-locale v0.0.0-20240223122105-ce5225dcaa49 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.4.0 // indirect

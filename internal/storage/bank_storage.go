@@ -154,7 +154,7 @@ func (s *sqlBankStorage) FindUserAccountByNumber(bankId int, number string) (*mo
 }
 
 func (s *sqlBankStorage) CreateTransaction(tx *model.Transaction) error {
-	_, err := s.db.Exec(tranQuery, tx.Amount, tx.Сurrency, tx.Description, tx.Status, tx.SourceAccountId, tx.DestinationAccountId, tx.SourceAccountType, tx.DestinationAccountType, tx.Type, tx.SourceBankId, tx.DestinationBankId, tx.InitiatedByUserId)
+	res, err := s.db.Exec(tranQuery, tx.Amount, tx.Сurrency, tx.Description, tx.Status, tx.SourceAccountId, tx.DestinationAccountId, tx.SourceAccountType, tx.DestinationAccountType, tx.Type, tx.SourceBankId, tx.DestinationBankId, tx.InitiatedByUserId)
 	if err != nil {
 		return err
 	}
@@ -179,8 +179,14 @@ func (s *sqlBankStorage) CreateTransaction(tx *model.Transaction) error {
 	if err != nil {
 		return err
 	}
-	return nil
 
+	lastID, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	tx.Id = int(lastID)
+	return nil
 }
 
 func (s *sqlBankStorage) CreateCredit(cr *model.Credit) error {

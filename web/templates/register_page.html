@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация | Bank System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eef4ff, #f7f9fc);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f2937;
+            padding: 24px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 760px;
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 20px 45px rgba(31, 79, 130, 0.12);
+            padding: 32px;
+        }
+
+        .brand {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f4f82;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            margin: 0 0 24px;
+            color: #6b7280;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .error-box {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field-full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #d7deea;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+            background: #fff;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #1f4f82;
+            box-shadow: 0 0 0 4px rgba(31, 79, 130, 0.10);
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            background: #1f4f82;
+            color: white;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            background: #173d66;
+        }
+
+        .bottom-text {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .bottom-text a {
+            color: #1f4f82;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .bottom-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="brand">BANK SYSTEM</div>
+        <h1>Регистрация</h1>
+        <p class="subtitle">Создайте аккаунт и выберите банк, в котором будет открыт ваш стартовый счёт.</p>
+
+        {{if .Error}}
+        <div class="error-box">
+            {{.Error}}
+        </div>
+        {{end}}
+
+        <form action="/register" method="POST">
+            <div class="grid">
+                <div class="field">
+                    <label for="name">Имя</label>
+                    <input type="text" id="name" name="name" placeholder="Введите имя" required>
+                </div>
+
+                <div class="field">
+                    <label for="surname">Фамилия</label>
+                    <input type="text" id="surname" name="surname" placeholder="Введите фамилию" required>
+                </div>
+
+                <div class="field field-full">
+                    <label for="middlename">Отчество</label>
+                    <input type="text" id="middlename" name="middlename" placeholder="Введите отчество">
+                </div>
+
+                <div class="field">
+                    <label for="passport_series">Серия паспорта</label>
+                    <input type="text" id="passport_series" name="passport_series" placeholder="Например: MP" required>
+                </div>
+
+                <div class="field">
+                    <label for="passport_number">Номер паспорта</label>
+                    <input type="text" id="passport_number" name="passport_number" placeholder="Введите номер паспорта" required>
+                </div>
+
+                <div class="field">
+                    <label for="phone">Телефон</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+375..." required>
+                </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="example@mail.com" required>
+                </div>
+
+                <div class="field field-full">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" placeholder="Введите пароль" required>
+                </div>
+
+                <div class="field field-full">
+                    <label for="bank_id">Выберите банк</label>
+                    <select id="bank_id" name="bank_id" required>
+                        <option value="">— Выберите банк —</option>
+                        {{range .Banks}}
+                        <option value="{{.ID}}">{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Зарегистрироваться</button>
+        </form>
+
+        <div class="bottom-text">
+            Уже есть аккаунт? <a href="/login">Войти</a>
+        </div>
+    </div>
+</body>
+</html>

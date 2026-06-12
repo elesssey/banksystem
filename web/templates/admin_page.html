@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ • Транзакции | Bank System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .shell {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            background: #020617;
+            border-radius: 18px;
+            box-shadow: 0 24px 80px rgba(15,23,42,0.8);
+            padding: 20px 24px 24px;
+            border: 1px solid rgba(148,163,184,0.25);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 16px;
+        }
+
+        .brand {
+            font-size: 13px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .table-wrapper {
+            margin-top: 18px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(148,163,184,0.35);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: linear-gradient(90deg, #020617, #020b18);
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: 600;
+            color: #9ca3af;
+            border-bottom: 1px solid rgba(148,163,184,0.4);
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            background: #020617;
+            border-bottom: 1px solid rgba(15,23,42,0.9);
+        }
+
+        tbody tr:nth-child(even) {
+            background: #020819;
+        }
+
+        tbody tr:hover {
+            background: #020617;
+        }
+
+        .tx-id {
+            color: #9ca3af;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .amount {
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
+        .amount.negative {
+            color: #f97373;
+        }
+
+        .amount.positive {
+            color: #4ade80;
+        }
+
+        .account {
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+        }
+
+        .name {
+            display: block;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .pill.pending {
+            background: rgba(250,204,21,0.1);
+            color: #facc15;
+        }
+
+        .pill.completed {
+            background: rgba(34,197,94,0.1);
+            color: #22c55e;
+        }
+
+        .pill.cancelled {
+            background: rgba(248,113,113,0.1);
+            color: #f97373;
+        }
+
+        .status-col {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .empty {
+            padding: 18px 14px;
+            font-size: 13px;
+            color: #9ca3af;
+            text-align: center;
+            background: #020617;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            margin-right: 6px;
+        }
+
+        .btn-confirm {
+            background: rgba(34,197,94,0.12);
+            color: #22c55e;
+            border-color: rgba(34,197,94,0.35);
+        }
+
+        .btn-confirm:hover {
+            background: rgba(34,197,94,0.2);
+        }
+
+        .btn-cancel {
+            background: rgba(248,113,113,0.12);
+            color: #f97373;
+            border-color: rgba(248,113,113,0.35);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(248,113,113,0.2);
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+
+            .card {
+                padding: 16px;
+                border-radius: 14px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+
+            .hide-sm {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <div class="card">
+        <div class="brand">BANK SYSTEM</div>
+        <div class="header">
+            <div>
+                <h1>Транзакции клиентов</h1>
+                <p class="subtitle">Все переводы между счетами. Выберите, какие заявки подтвердить.</p>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            {{if .Transactions}}
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Отправитель</th>
+                    <th>Получатель</th>
+                    <th class="hide-sm">Сумма</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{range .Transactions}}
+                <tr>
+                    <td class="tx-id">#{{.Id}}</td>
+
+                    <td>
+                        <span class="account">{{.SourseAccountNumber}}</span>
+                        {{if .SourceAccountUser}}
+                        <span class="name">{{.SourceAccountUser.Surname}} {{.SourceAccountUser.Name}}</span>
+                        {{end}}
+                    </td>
+
+                    <td>
+                        <span class="account">{{.DestinationAccountNumber}}</span>
+                        {{if .DestinationAccountUser}}
+                        <span class="name">{{.DestinationAccountUser.Surname}} {{.DestinationAccountUser.Name}}</span>
+                        {{end}}
+                    </td>
+
+                    <td class="amount hide-sm {{if eq .Type "transfer"}}negative{{else}}positive{{end}}">
+                        {{.Amount}} {{.Сurrency}}
+                    </td>
+
+                    <td class="status-col">
+                        {{if eq .Status "pending"}}
+                        <span class="pill pending">Ожидает</span>
+                        {{else if eq .Status "completed"}}
+                        <span class="pill completed">Завершена</span>
+                        {{else if eq .Status "cancelled"}}
+                        <span class="pill cancelled">Отменена</span>
+                        {{else}}
+                        <span class="pill">{{.Status}}</span>
+                        {{end}}
+                    </td>
+
+                    <td>
+                        {{if eq .Status "pending"}}
+                        <a href="/transaction/Confirm?id={{.Id}}" class="btn-action btn-confirm">Да</a>
+                        <a href="/transaction/Cancel?id={{.Id}}" class="btn-action btn-cancel">Нет</a>
+                        {{else}}
+                        <span class="subtitle">Нет действий</span>
+                        {{end}}
+                    </td>
+                </tr>
+                {{end}}
+                </tbody>
+            </table>
+            {{else}}
+            <div class="empty">
+                Пока нет ни одной транзакции.
+            </div>
+            {{end}}
+        </div>
+    </div>
+</div>
+</body>
+</html>

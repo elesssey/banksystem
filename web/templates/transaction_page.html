@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Перевод средств | Bank System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eef4ff, #f7f9fc);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f2937;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 20px 45px rgba(31, 79, 130, 0.12);
+            padding: 28px 30px 32px;
+        }
+
+        .brand {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f4f82;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            margin: 0 0 20px;
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .account-box {
+            background: #f3f4ff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e7ff;
+        }
+
+        .account-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .account-label {
+            color: #6b7280;
+        }
+
+        .account-value {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        form input {
+            width: 100%;
+            padding: 11px 12px;
+            margin-bottom: 14px;
+            border: 1px solid #d7deea;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        form input:focus {
+            border-color: #1f4f82;
+            box-shadow: 0 0 0 3px rgba(31, 79, 130, 0.10);
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            background: #1f4f82;
+            color: white;
+            padding: 13px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 4px;
+        }
+
+        .btn:hover {
+            background: #173d66;
+        }
+
+        .note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="brand">BANK SYSTEM</div>
+    <h1>Перевод средств</h1>
+    <p class="subtitle">Проверьте данные счёта и укажите сумму и номер счёта получателя.</p>
+
+    <div class="account-box">
+        <div class="account-row">
+            <span class="account-label">Номер счёта</span>
+            <span class="account-value">{{.Account.Number}}</span>
+        </div>
+        <div class="account-row">
+            <span class="account-label">Баланс</span>
+            <span class="account-value">{{.Account.Balance}} {{.Account.Currency}}</span>
+        </div>
+    </div>
+
+    <form method="POST" action="/transaction">
+        <input type="hidden" name="CSRF-TOKEN" value="{{.Csrf}}">
+        <label for="amount">Сумма перевода</label>
+        <input type="number" step="0.01" id="amount" name="amount"
+               placeholder="Например, 150.00" required>
+
+        <label for="to_account">Счёт получателя</label>
+        <input type="text" id="to_account" name="to_account"
+               placeholder="Введите номер счёта" required>
+
+        <input type="hidden" name="from_account" value="{{.Account.Number}}">
+
+        <button type="submit" class="btn">Отправить перевод</button>
+    </form>
+
+    <div class="note">
+        Убедитесь, что номер счёта получателя указан верно. Отменить перевод будет невозможно.
+    </div>
+</div>
+</body>
+</html>

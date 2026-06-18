@@ -26,11 +26,17 @@ const fetchQuery = `
 
 type TransactionStorage interface {
 	Fetch(limit int, bankId int) ([]*model.Transaction, error)
+	FetchTransaction(transactionId int) (*model.Transaction, error)
 	FetchAllTransaction() ([]*model.Transaction, error)
 	FetchwithUsers(limit int, bankId int) ([]*model.Transaction, error)
 	FetchCurrentTransaction(id int) (*model.Transaction, error)
+	FetchChecks(transactionId int) (*model.TransactionChecks, error)
 	ConfirmTransaction(transaction *model.Transaction) error
+	ConfirmFeeTransaction(transaction *model.Transaction) error
 	DeclineTransaction(transaction *model.Transaction) error
+	DeclineFeeTransaction(transaction *model.Transaction) error
+	SetValidationTransaction(transactionId int) error
+	SetFeeOk(transactionId int) error
 }
 
 type sqlTransactionStorage struct {
@@ -76,6 +82,49 @@ func (s *sqlTransactionStorage) Fetch(limit int, bankId int) ([]*model.Transacti
 		return nil, fmt.Errorf("не получается достать транзакции rows.Err(): %w", err)
 	}
 	return transactions, nil
+}
+
+func (s *sqlTransactionStorage) FetchTransaction(transactionId int) (*model.Transaction, error) {
+	row := s.db.QueryRow(`
+        SELECT 
+            id,
+            amount,
+            currency,
+            description,
+            status,
+            source_account_id,
+            destination_account_id,
+            source_account_type,
+            destination_account_type,
+            type,
+            source_bank_id,
+            destination_bank_id,
+            initiated_by_user_id
+        FROM system_transaction
+        WHERE id = ?
+    `, transactionId)
+
+	transaction := &model.Transaction{}
+
+	if err := row.Scan(
+		&transaction.Id,
+		&transaction.Amount,
+		&transaction.Сurrency,
+		&transaction.Description,
+		&transaction.Status,
+		&transaction.SourceAccountId,
+		&transaction.DestinationAccountId,
+		&transaction.SourceAccountType,
+		&transaction.DestinationAccountType,
+		&transaction.Type,
+		&transaction.SourceBankId,
+		&transaction.DestinationBankId,
+		&transaction.InitiatedByUserId,
+	); err != nil {
+		return nil, fmt.Errorf("не получается достать транзакцию scan: %w", err)
+	}
+
+	return transaction, nil
 }
 
 func (s *sqlTransactionStorage) FetchwithUsers(limit int, bankId int) ([]*model.Transaction, error) {
@@ -229,6 +278,37 @@ func (s *sqlTransactionStorage) ConfirmTransaction(transaction *model.Transactio
 	}
 	return nil
 }
+
+func (s *sqlTransactionStorage) ConfirmFeeTransaction(transaction *model.Transaction) error {
+	dbtx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	_, err = dbtx.Exec(`UPDATE user_account SET hold_fee_balance =  hold_fee_balance - ? WHERE id =?`, transaction.Amount, transaction.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET balance = balance + ? WHERE id =?`, transaction.Amount, transaction.DestinationAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE system_transaction SET status = ? WHERE id =?`, "completed", transaction.Id)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	err = dbtx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *sqlTransactionStorage) DeclineTransaction(transaction *model.Transaction) error {
 	dbtx, err := s.db.Begin()
 	if err != nil {
@@ -236,6 +316,36 @@ func (s *sqlTransactionStorage) DeclineTransaction(transaction *model.Transactio
 	}
 
 	_, err = dbtx.Exec(`UPDATE user_account SET hold_balance =  hold_balance - ? WHERE id =?`, transaction.Amount, transaction.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET balance = balance + ? WHERE id =?`, transaction.Amount, transaction.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+	_, err = dbtx.Exec(`UPDATE system_transaction SET status = ? WHERE id =?`, "cancelled", transaction.Id)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	err = dbtx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *sqlTransactionStorage) DeclineFeeTransaction(transaction *model.Transaction) error {
+	dbtx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET hold_fee_balance =  hold_fee_balance - ? WHERE id =?`, transaction.Amount, transaction.SourceAccountId)
 	if err != nil {
 		dbtx.Rollback()
 		return err
@@ -306,4 +416,41 @@ func (s *sqlTransactionStorage) FetchAllTransaction() ([]*model.Transaction, err
 		return nil, fmt.Errorf("не получается достать транзакции rows.Err(): %w", err)
 	}
 	return transactions, nil
+}
+
+func (s *sqlTransactionStorage) SetValidationTransaction(transactionId int) error {
+	_, err := s.db.Exec(`
+        INSERT INTO transaction_checks (transaction_id, validation_ok, fee_ok)
+        VALUES (?, 1, 0)
+        ON CONFLICT(transaction_id) DO UPDATE SET validation_ok = 1
+    `, transactionId)
+	return err
+}
+
+func (s *sqlTransactionStorage) SetFeeOk(transactionId int) error {
+	_, err := s.db.Exec(`
+        INSERT INTO transaction_checks (transaction_id, validation_ok, fee_ok)
+        VALUES (?, 0, 1)
+        ON CONFLICT(transaction_id) DO UPDATE SET fee_ok = 1
+    `, transactionId)
+	return err
+}
+
+func (s *sqlTransactionStorage) FetchChecks(txID int) (*model.TransactionChecks, error) {
+	row := s.db.QueryRow(`
+        SELECT transaction_id, validation_ok, fee_ok
+        FROM transaction_checks
+        WHERE transaction_id = ?
+    `, txID)
+
+	var tc model.TransactionChecks
+	var vOk, fOk int
+
+	if err := row.Scan(&tc.TransactionID, &vOk, &fOk); err != nil {
+		return nil, err
+	}
+
+	tc.ValidationOK = vOk == 1
+	tc.FeeOK = fOk == 1
+	return &tc, nil
 }

@@ -46,6 +46,7 @@ type BankStorage interface {
 	FreezeAccount(id int) error
 	UnFreezeAccount(id int) error
 	FindUserAccountByAccountId(bankId int, accountId int) (*model.UserAccount, error)
+	CreateFeeTransaction(tx *model.Transaction) error
 }
 
 type sqlBankStorage struct {
@@ -170,6 +171,42 @@ func (s *sqlBankStorage) CreateTransaction(tx *model.Transaction) error {
 	}
 
 	_, err = dbtx.Exec(`UPDATE user_account SET hold_balance = hold_balance + ? WHERE id =?`, tx.Amount, tx.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	err = dbtx.Commit()
+	if err != nil {
+		return err
+	}
+
+	lastID, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	tx.Id = int(lastID)
+	return nil
+}
+
+func (s *sqlBankStorage) CreateFeeTransaction(tx *model.Transaction) error {
+	res, err := s.db.Exec(tranQuery, tx.Amount, tx.Сurrency, tx.Description, tx.Status, tx.SourceAccountId, tx.DestinationAccountId, tx.SourceAccountType, tx.DestinationAccountType, tx.Type, tx.SourceBankId, tx.DestinationBankId, tx.InitiatedByUserId)
+	if err != nil {
+		return err
+	}
+	dbtx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET balance = balance - ? WHERE id =?`, tx.Amount, tx.SourceAccountId)
+	if err != nil {
+		dbtx.Rollback()
+		return err
+	}
+
+	_, err = dbtx.Exec(`UPDATE user_account SET hold_fee_balance = hold_fee_balance + ? WHERE id =?`, tx.Amount, tx.SourceAccountId)
 	if err != nil {
 		dbtx.Rollback()
 		return err

@@ -15,6 +15,7 @@ type BankingService interface {
 	CreationTransaction(transaction *model.Transaction) error
 	CreateCredit(cr *model.Credit) error
 	GetTransactions(bankId int) ([]*model.Transaction, error)
+	GetTransactionById(transactionId int) (*model.Transaction, error)
 	GetAllTransactions() ([]*model.Transaction, error)
 	GetCredits(bankid int) ([]*model.Credit, error)
 	TransactionConfirmation(id int) error
@@ -25,6 +26,9 @@ type BankingService interface {
 	UnFreezeAccount(id int) error
 	GetAnyUserAccount(userId int) (*model.UserAccount, error)
 	GetAccountByNumber(number string) (*model.UserAccount, error)
+	MarkValidationOk(transactionId int) error
+	MarkFeeOk(transactionId int) error
+	GetChecks(transactionId int) (*model.TransactionChecks, error)
 	//ConfirmTransaction(amount int, number string) error
 }
 
@@ -54,6 +58,9 @@ func (s *bankingService) GetBanks() ([]*model.Bank, error) {
 
 func (s *bankingService) GetTransactions(bankId int) ([]*model.Transaction, error) {
 	return s.transactionStorage.FetchwithUsers(10, bankId)
+}
+func (s *bankingService) GetTransactionById(transactionId int) (*model.Transaction, error) {
+	return s.transactionStorage.FetchTransaction(transactionId)
 }
 
 func (s *bankingService) GetAllTransactions() ([]*model.Transaction, error) {
@@ -224,6 +231,18 @@ func (s *bankingService) CreationTransaction(transaction *model.Transaction) err
 	err = s.pendingService.SendVerification("cchheltyyy81@gmail.com", transaction)
 
 	return nil
+}
+
+func (s *bankingService) MarkValidationOk(transactionId int) error {
+	return s.transactionStorage.SetValidationTransaction(transactionId)
+}
+
+func (s *bankingService) MarkFeeOk(transactionId int) error {
+	return s.transactionStorage.SetFeeOk(transactionId)
+}
+
+func (s *bankingService) GetChecks(transactionId int) (*model.TransactionChecks, error) {
+	return s.transactionStorage.FetchChecks(transactionId)
 }
 
 //func (s *bankingService) ConfirmTransaction(amount int, number string) error {}

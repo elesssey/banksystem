@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -15,21 +14,21 @@ import (
 type Handler struct {
 	bankingService service.BankingService
 	authService    service.AuthService
-	stateStore     *StateStore
 	templates      *template.Template
+	producer       service.TransactionProducer
 }
 
 func NewHandler(
 	bankingService service.BankingService,
 	authService service.AuthService,
-	stateStore *StateStore,
 	templates *template.Template,
+	producer service.TransactionProducer,
 ) *Handler {
 	return &Handler{
 		bankingService: bankingService,
 		authService:    authService,
-		stateStore:     stateStore,
 		templates:      templates,
+		producer:       producer,
 	}
 }
 
@@ -262,8 +261,6 @@ func (h Handler) MakeTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("qweqweqwe")
-
 	val := r.Context().Value("user_id")
 	userID, ok := val.(int)
 	if !ok {
@@ -284,12 +281,12 @@ func (h Handler) MakeTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	csrf := r.FormValue("CSRF-TOKEN")
+	// csrf := r.FormValue("CSRF-TOKEN")
 
-	if csrf != r.Context().Value("CSRF-TOKEN") {
-		http.Error(w, "Некорректный CSRF", http.StatusBadRequest)
-		return
-	}
+	// if csrf != r.Context().Value("CSRF-TOKEN") {
+	// 	http.Error(w, "Некорректный CSRF", http.StatusBadRequest)
+	// 	return
+	// }
 
 	number := r.FormValue("to_account")
 
@@ -332,6 +329,18 @@ func (h Handler) MakeTransaction(w http.ResponseWriter, r *http.Request) {
 
 	err = h.bankingService.CreationTransaction(transaction)
 
+	if err != nil {
+		http.Error(w, "Ошибка создания транзакции: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.producer.PublishTransaction(r.Context(), transaction.Id); err != nil {
+		http.Error(w, "Ошибка отправки транзакции в очередь: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//здесь
+
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
@@ -373,7 +382,7 @@ func (h Handler) MakeTransactionDeclanation(w http.ResponseWriter, r *http.Reque
 
 	h.bankingService.TransactionDeclination(transactionId)
 
-	http.Redirect(w, r, "/transaction", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
 func (h Handler) AdminPage(w http.ResponseWriter, r *http.Request) {

@@ -143,8 +143,9 @@ func (s *sqlUserStorage) AddNewUserWithAccount(user *model.User, bankId int) err
 			balance,
 			currency,
 			user_id,
-			bank_id
-		)VALUES(?,?,?,?,?)`, mainNumber, 0, "BYN", userId, bankId)
+			bank_id,
+			freezing
+		)VALUES(?,?,?,?,?)`, mainNumber, 0, "BYN", userId, bankId, 0)
 
 	if err != nil {
 		dbtx.Rollback()

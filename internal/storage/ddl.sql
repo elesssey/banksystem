@@ -47,6 +47,7 @@ create table user_account (
     'currency' text not null,
     'user_id' integer not null,
     'bank_id' integer not null,
+    'hold_fee_balance' integer not null default 0,
     'hold_balance' integer not null default 0,
     'freezing' integer not null default 0,
     foreign key (bank_id) references bank(id)
@@ -108,6 +109,12 @@ CREATE TABLE pending_registration (
     'verification_code_hash' TEXT NOT NULL,
     'expires_at' DATETIME NOT NULL,
     'created_at' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS transaction_checks (
+    transaction_id INTEGER PRIMARY KEY,
+    validation_ok  INTEGER NOT NULL DEFAULT 0,
+    fee_ok         INTEGER NOT NULL DEFAULT 0
 );
 
 create table system_credit (

@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	"github.com/nats-io/nats.go"
 
 	"banksystem/internal/service"
 	"banksystem/internal/storage"
@@ -34,15 +35,21 @@ func main() {
 	authService := service.NewAuthService(userStorage, pendingStorage, pendingService)
 	bankingService := service.NewBankingService(bankStorage, transactionStorage, creditStorage, userStorage, pendingStorage, pendingService)
 
-	appStateStore := webui.NewStateStore()
-
 	tmpl := template.Must(template.ParseGlob("../../web/templates/*.html"))
+
+	natsConn, err := nats.Connect("nats://127.0.0.1:4222")
+	if err != nil {
+		log.Fatalf("cannot connect to NATS: %v", err)
+	}
+	defer natsConn.Drain()
+
+	producer := service.NewNATSTransactionProducer(natsConn)
 
 	handler := webui.NewHandler(
 		bankingService,
 		authService,
-		appStateStore,
 		tmpl,
+		producer,
 	)
 
 	r := chi.NewRouter()
